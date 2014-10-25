@@ -1,0 +1,10 @@
+Creator:        Prawn
+Producer:       Prawn
+Tagged:         no
+Form:           none
+Pages:          3
+Encrypted:      no
+Page size:      612 x 792 pts (letter) (rotated 0 degrees)
+File size:      1521 bytes
+Optimized:      no
+PDF version:    1.3
