@@ -14,7 +14,7 @@ class Pdfinfo
     :pdf_version
 
   def self.exec(file_path)
-    stdout, stderr, status = Open3.capture2e("pdfinfo #{file_path}")
+    stdout, stderr, status = Open3.capture2e("#{pdfinfo_command} #{file_path}")
     stdout.chomp
   end
 
@@ -27,7 +27,7 @@ class Pdfinfo
   end
 
   def initialize(source_path)
-    info_hash = parse_shell_response(exec(source_path))
+    info_hash = parse_shell_response(Pdfinfo.exec(source_path))
 
     @creator        = info_hash['Creator']
     @producer       = info_hash['Producer']
@@ -49,10 +49,6 @@ class Pdfinfo
   end
 
   private
-
-  def exec(file_path)
-    self.class.exec(file_path)
-  end
 
   def parse_shell_response(response_str)
     Hash[response_str.split(/\n/).map {|kv| kv.split(/:\s+/) }]
