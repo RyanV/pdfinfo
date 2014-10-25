@@ -1,7 +1,13 @@
 # Pdfinfo
 
-TODO: Write a gem description
+Simple ruby wrapper around the pdfinfo command
 
+## Depdendecies
+
+usage of this gem assumes that you have xpdf installed.  The fastest way to install xpdf:
+
+    $ brew install xpdf
+    
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -18,7 +24,28 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
+```ruby
+pdfinfo = Pdfinfo.new("path/to/file.pdf")
+
+pdfinfo.creator     #=> "Creator Name" # or nil
+pdfinfo.producer    #=> "Producer Name" # or nil
+pdfinfo.form        #=> "none"
+pdfinfo.page_count  #=> 3
+pdfinfo.width       #=> 612
+pdfinfo.height      #=> 792
+pdfinfo.size        #=> 1521 # file size in bytes
+pdfinfo.pdf_version #=> "1.3"
+pdfinfo.encrypted?  #=> false # or true
+pdfinfo.tagged?     #=> false # or true
+```
+
+You can directly set the location of the executable if its not located in your environment $PATH or you just want to point to a different location.
+
+```ruby
+Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
+Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
+```
 
 ## Contributing
 
