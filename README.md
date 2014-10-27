@@ -27,18 +27,35 @@ Or install it yourself as:
 
 
 ```ruby
-pdfinfo = Pdfinfo.new("path/to/file.pdf")
+pdfinfo.title         #=> "Title" # or nil
+pdfinfo.subject       #=> "Subject" # or nil
+pdfinfo.keywords      #=> ["Keyword1", "Keyword2"] # or nil
+pdfinfo.author        #=> "Author Name" # or nil
+pdfinfo.creator       #=> "Creator Name" # or nil
+pdfinfo.producer      #=> "Producer Name" # or nil
+ddfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # Time object
+pdfinfo.form          #=> "none"
+pdfinfo.page_count    #=> 3
+pdfinfo.width         #=> 612
+pdfinfo.height        #=> 792
+pdfinfo.size          #=> 1521 # file size in bytes
+pdfinfo.pdf_version   #=> "1.3"
+pdfinfo.encrypted?    #=> false # or true
+pdfinfo.usage_rights  #=> {print: true, copy: true, change: true, add_notes: true}
+pdfinfo.printable?    #=> true  # or false
+pdfinfo.copyable?     #=> true  # or false
+pdfinfo.changeable?   #=> true  # or false
+pdfinfo.modifiable?   #=> true  # or false. alias for #changeable?
+pdfinfo.annotatable?  #=> true  # or false
+pdfinfo.tagged?       #=> false # or true
+```
+For encrypted files with a password you can pass in the user or owner password as options
 
-pdfinfo.creator     #=> "Creator Name" # or nil
-pdfinfo.producer    #=> "Producer Name" # or nil
-pdfinfo.form        #=> "none"
-pdfinfo.page_count  #=> 3
-pdfinfo.width       #=> 612
-pdfinfo.height      #=> 792
-pdfinfo.size        #=> 1521 # file size in bytes
-pdfinfo.pdf_version #=> "1.3"
-pdfinfo.encrypted?  #=> false # or true
-pdfinfo.tagged?     #=> false # or true
+```ruby
+pdfinfo = Pdfinfo.new("path/to/encrypted.pdf", user_password: 'foo')
+# pdfinfo = Pdfinfo.new("path/to/encrypted.pdf", owner_password: 'foo')
+pdfinfo.encrypted?    #=> true
+pdfinfo.usage_rights  #=> {print: false, copy: false, change: false, add_notes: false}
 ```
 
 You can directly set the location of the executable if its not located in your environment $PATH or you just want to point to a different location.
@@ -65,3 +82,8 @@ Then run specs by running
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create a new Pull Request
+
+## TODO
+* Error handling
+* type coersion is getting messy in initialize.  refactor.
+* Add #to_hash/#to_h/#as_json method to output all metadata as a hash
