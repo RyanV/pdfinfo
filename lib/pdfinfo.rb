@@ -18,8 +18,15 @@ class Pdfinfo
     :file_size,
     :pdf_version
 
-  def self.exec(file_path)
-    stdout, stderr, status = Open3.capture2e("#{pdfinfo_command} #{file_path}")
+  def self.exec(file_path, opts = {})
+    flags = []
+    if opts[:owner_password]
+      flags << ['-opw', opts[:owner_password]]
+    elsif opts[:user_password]
+      flags << ['-upw', opts[:user_password]]
+    end
+
+    stdout, stderr, status = Open3.capture2e("#{pdfinfo_command} #{flags.join(" ")} #{file_path}")
     stdout.chomp
   end
 
@@ -31,8 +38,8 @@ class Pdfinfo
     @pdfinfo_command = cmd
   end
 
-  def initialize(source_path)
-    info_hash = parse_shell_response(Pdfinfo.exec(source_path))
+  def initialize(source_path, opts = {})
+    info_hash = parse_shell_response(Pdfinfo.exec(source_path, opts))
 
     @title          = info_hash['Title'].empty? ? nil : info_hash['Title']
     @subject        = info_hash['Subject'].empty? ? nil : info_hash['Subject']

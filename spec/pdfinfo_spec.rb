@@ -18,7 +18,7 @@ RSpec.describe Pdfinfo do
   end
 
   before(:each) do
-    allow(described_class).to receive(:exec).and_return(mock_response)
+    allow(Open3).to receive(:capture2e).and_return([mock_response, nil, nil])
   end
 
   describe '.pdfinfo_command' do
@@ -30,6 +30,28 @@ RSpec.describe Pdfinfo do
     it 'allows the command to be changed' do
       Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
       expect(Pdfinfo.pdfinfo_command).to eq('/another/bin/path/pdfinfo')
+    end
+  end
+
+  describe '.exec' do
+    context 'with no options given' do
+      it 'runs the pdfinfo command without flags' do
+        expect(Open3).to receive(:capture2e).with("pdfinfo  path/to/file.pdf")
+        Pdfinfo.new("path/to/file.pdf")
+      end
+    end
+
+    context "passing in :user_password" do
+      it 'runs the pdfinfo command passing the user password flag' do
+        expect(Open3).to receive(:capture2e).with("pdfinfo -upw foo path/to/file.pdf")
+        Pdfinfo.new("path/to/file.pdf", user_password: 'foo')
+      end
+    end
+    context 'passing in :owner_password' do
+      it 'runs the pdfinfo command passing the user password flag' do
+        expect(Open3).to receive(:capture2e).with("pdfinfo -opw bar path/to/file.pdf")
+        Pdfinfo.new("path/to/file.pdf", owner_password: 'bar')
+      end
     end
   end
 
