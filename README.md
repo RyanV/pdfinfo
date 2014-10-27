@@ -47,6 +47,16 @@ Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
 Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
 ```
 
+## Running specs
+
+generate pdf fixtures by first running 
+
+    $ rake generate_fixtures
+    
+Then run specs by running
+
+    $ rake
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/pdfinfo/fork )

@@ -1,13 +1,15 @@
 require 'spec_helper'
 
 RSpec.describe Pdfinfo do
-  let(:pdf_path) { fixture_path('test.pdf') }
+  let(:pdf_path) { fixture_path('pdfs/test.pdf') }
   let(:pdfinfo) { described_class.new(pdf_path) }
-  let(:mock_response) { File.read(fixture_path('shell_response.txt')).chomp }
+  let(:encrypted_response) { File.read(fixture_path('shell_responses/encrypted.txt')).chomp }
+  let(:unencrypted_response) { File.read(fixture_path('shell_responses/test.txt')).chomp }
+  let(:mock_response) { unencrypted_response }
 
-  before(:suite) do
-    # validate that our mock response matches the real response
-    expect(described_class.exec(pdf_path)).to eq(mock_response)
+  specify "mock responses match" do
+    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
+    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
   end
 
   before(:each) do
@@ -28,7 +30,7 @@ RSpec.describe Pdfinfo do
 
   describe '#creator' do
     context 'when given a creator' do
-      it { expect(pdfinfo.creator).to eq('Prawn') }
+      it { expect(pdfinfo.creator).to eq('Pdfinfo Creator') }
     end
     context 'when creator is not present' do
       let(:mock_response) { "Creator: \n" }
@@ -38,7 +40,7 @@ RSpec.describe Pdfinfo do
 
   describe '#producer' do
     context 'when given a creator' do
-      it { expect(pdfinfo.producer).to eq('Prawn') }
+      it { expect(pdfinfo.producer).to eq('Pdfinfo Producer') }
     end
     context 'when creator is not present' do
       let(:mock_response) { "Producer: \n" }
@@ -63,32 +65,32 @@ RSpec.describe Pdfinfo do
 
   describe 'page_count' do
     it 'returns a fixnum value of the number of pages' do
-      expect(pdfinfo.page_count).to eq(3)
+      expect(pdfinfo.page_count).to eq(5)
     end
   end
 
   describe 'encrypted?' do
     context 'given encrypted pdf' do
-      let(:mock_response) { "Encrypted: yes\n" }
+      let(:mock_response) { encrypted_response }
       it { expect(pdfinfo.encrypted?).to eq(true) }
     end
     context 'given unencrypted pdf' do
-      let(:mock_response) { 'Encrypted: no' }
+      let(:mock_response) { unencrypted_response }
       it { expect(pdfinfo.encrypted?).to eq(false) }
     end
   end
 
   describe 'width' do
-    it { expect(pdfinfo.width).to eq(612) }
+    it { expect(pdfinfo.width).to eq(595.28) }
   end
 
   describe 'height' do
-    it { expect(pdfinfo.height).to eq(792) }
+    it { expect(pdfinfo.height).to eq(841.89) }
   end
 
   describe 'size' do
     it 'returns a fixnm value for the file size in bytes' do
-      expect(pdfinfo.file_size).to eq(1521)
+      expect(pdfinfo.file_size).to eq(2867)
     end
   end
 

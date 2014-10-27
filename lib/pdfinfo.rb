@@ -2,7 +2,7 @@ require 'open3'
 require 'pathname'
 
 class Pdfinfo
-  DIMENSIONS_REGEXP = /(\d+) x (\d+)/
+  DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
 
   attr_reader :creator,
     :producer,
@@ -56,6 +56,6 @@ class Pdfinfo
 
   def extract_page_dimensions(str)
     return unless str
-    str.match(DIMENSIONS_REGEXP).captures.map(&:to_i)
+    str.match(DIMENSIONS_REGEXP).captures.map(&:to_f)
   end
 end

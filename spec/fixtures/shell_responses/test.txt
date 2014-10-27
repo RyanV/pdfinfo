@@ -1,0 +1,15 @@
+Title:          Pdfinfo Title
+Subject:        Pdfinfo Subject
+Keywords:       Keyword1 Keyword2
+Author:         Pdfinfo Author
+Creator:        Pdfinfo Creator
+Producer:       Pdfinfo Producer
+CreationDate:   Sun Oct 26 16:00:00 2014
+Tagged:         no
+Form:           none
+Pages:          5
+Encrypted:      no
+Page size:      595.28 x 841.89 pts (A4) (rotated 0 degrees)
+File size:      2867 bytes
+Optimized:      no
+PDF version:    1.3
