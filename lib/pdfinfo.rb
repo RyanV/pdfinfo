@@ -35,13 +35,13 @@ class Pdfinfo
   def initialize(source_path)
     info_hash = parse_shell_response(Pdfinfo.exec(source_path))
 
-    @title          = info_hash['Title']
-    @subject        = info_hash['Subject']
-    @keywords       = info_hash['Keywords'] ? info_hash['Keywords'].split(/\s/) : []
-    @author         = info_hash['Author']
-    @creator        = info_hash['Creator']
-    @producer       = info_hash['Producer']
-    @creation_date  = info_hash['CreationDate'] ? Time.parse(info_hash['CreationDate']) : nil
+    @title          = info_hash['Title'].empty? ? nil : info_hash['Title']
+    @subject        = info_hash['Subject'].empty? ? nil : info_hash['Subject']
+    @keywords       = info_hash['Keywords'].empty? ? [] : info_hash['Keywords'].split(/\s/)
+    @author         = info_hash['Author'].empty? ? nil : info_hash['Author']
+    @creator        = info_hash['Creator'].empty? ? nil : info_hash['Creator']
+    @producer       = info_hash['Producer'].empty? ? nil : info_hash['Producer']
+    @creation_date  = info_hash['CreationDate'].empty? ? nil : Time.parse(info_hash['CreationDate'])
     @tagged         = !!(info_hash['Tagged'] =~ /yes/)
     @form           = info_hash['Form']
     @page_count     = info_hash['Pages'].to_i
@@ -70,10 +70,26 @@ class Pdfinfo
     @encrypted
   end
 
-  private
+  def printable?
+    @usage_rights[:print]
+  end
 
+  def copyable?
+    @usage_rights[:copy]
+  end
+
+  def changeable?
+    @usage_rights[:change]
+  end
+  alias modifiable? changeable?
+
+  def annotatable?
+    @usage_rights[:add_notes]
+  end
+
+  private
   def parse_shell_response(response_str)
-    Hash[response_str.split(/\n/).map {|kv| kv.split(/:\s+/) }]
+    Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
   end
 
   def extract_page_dimensions(str)

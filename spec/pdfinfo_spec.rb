@@ -7,6 +7,10 @@ RSpec.describe Pdfinfo do
   let(:unencrypted_response) { File.read(fixture_path('shell_responses/test.txt')).chomp }
   let(:mock_response) { unencrypted_response }
 
+
+  def modified_response(response, key, new_value = '')
+    response.sub(/(?<=#{key}:)(.+)$/, new_value)
+  end
   specify "mock responses match" do
     expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
     expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
@@ -16,7 +20,7 @@ RSpec.describe Pdfinfo do
     allow(described_class).to receive(:exec).and_return(mock_response)
   end
 
-  describe 'pdfinfo_command' do
+  describe '.pdfinfo_command' do
     it "falls back to pdfinfo" do
       Pdfinfo.pdfinfo_command = nil
       expect(Pdfinfo.pdfinfo_command).to eq('pdfinfo')
@@ -35,7 +39,7 @@ RSpec.describe Pdfinfo do
       end
     end
     context 'when title is not present' do
-      let(:mock_response) { "Title: \n" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Title', '') }
       it 'returns nil' do
         expect(pdfinfo.title).to be_nil
       end
@@ -49,9 +53,9 @@ RSpec.describe Pdfinfo do
       end
     end
     context 'when title is not present' do
-      let(:mock_response) { "Subject: \n" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Subject', '') }
       it 'returns nil' do
-        expect(pdfinfo.title).to be_nil
+        expect(pdfinfo.subject).to be_nil
       end
     end
   end
@@ -62,8 +66,8 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.keywords).to eq(['Keyword1', 'Keyword2'])
       end
     end
-    context 'when title is not present' do
-      let(:mock_response) { "Keywords: \n" }
+    context 'when keywords is not present' do
+      let(:mock_response) { modified_response(unencrypted_response, 'Keywords', '') }
       it 'returns an empty array' do
         expect(pdfinfo.keywords).to eq([])
       end
@@ -76,10 +80,10 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.author).to eq('Pdfinfo Author')
       end
     end
-    context 'when title is not present' do
-      let(:mock_response) { "Author: \n" }
+    context 'when author is not present' do
+      let(:mock_response) { modified_response(unencrypted_response, 'Author', '') }
       it 'returns nil' do
-        expect(pdfinfo.title).to be_nil
+        expect(pdfinfo.author).to be_nil
       end
     end
   end
@@ -94,7 +98,7 @@ RSpec.describe Pdfinfo do
       end
     end
     context 'when creation date is not present' do
-      let(:mock_response) { "CreationDate: \n" }
+      let(:mock_response) { modified_response(unencrypted_response, 'CreationDate', '') }
       it 'returns nil' do
         expect(pdfinfo.creation_date).to be_nil
       end
@@ -106,7 +110,7 @@ RSpec.describe Pdfinfo do
       it { expect(pdfinfo.creator).to eq('Pdfinfo Creator') }
     end
     context 'when creator is not present' do
-      let(:mock_response) { "Creator: \n" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Creator', '') }
       it { expect(pdfinfo.creator).to be_nil }
     end
   end
@@ -116,18 +120,18 @@ RSpec.describe Pdfinfo do
       it { expect(pdfinfo.producer).to eq('Pdfinfo Producer') }
     end
     context 'when creator is not present' do
-      let(:mock_response) { "Producer: \n" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Producer', '') }
       it { expect(pdfinfo.producer).to be_nil }
     end
   end
 
-  describe 'tagged?' do
+  describe '#tagged?' do
     context 'when tagged' do
-      let(:mock_response) { "Tagged: yes" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Tagged', 'yes') }
       it { expect(pdfinfo.tagged?).to eq(true) }
     end
     context 'when not tagged' do
-      let(:mock_response) { "Tagged: no" }
+      let(:mock_response) { modified_response(unencrypted_response, 'Tagged', 'no') }
       it { expect(pdfinfo.tagged?).to eq(false) }
     end
   end
@@ -136,13 +140,13 @@ RSpec.describe Pdfinfo do
     it { expect(pdfinfo.form).to eq('none') }
   end
 
-  describe 'page_count' do
+  describe '#page_count' do
     it 'returns a fixnum value of the number of pages' do
       expect(pdfinfo.page_count).to eq(5)
     end
   end
 
-  describe 'encrypted?' do
+  describe '#encrypted?' do
     context 'given encrypted pdf' do
       let(:mock_response) { encrypted_response }
       it { expect(pdfinfo.encrypted?).to eq(true) }
@@ -178,21 +182,76 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe 'width' do
+  describe '#printable?' do
+    context 'given a pdf that is printable' do
+      let(:mock_response) { unencrypted_response }
+      it { expect(pdfinfo.printable?).to eq(true) }
+    end
+    context 'given a pdf that is not printable' do
+      let(:mock_response) { encrypted_response }
+      it { expect(pdfinfo.printable?).to eq(false) }
+    end
+  end
+
+  describe '#copyable?' do
+    context 'given a pdf that is copyable' do
+      let(:mock_response) { unencrypted_response }
+      it { expect(pdfinfo.copyable?).to eq(true) }
+    end
+    context 'given a pdf that is not copyable' do
+      let(:mock_response) { encrypted_response }
+      it { expect(pdfinfo.copyable?).to eq(false) }
+    end
+  end
+
+  describe '#changeable?' do
+    context 'given a pdf that is changeable' do
+      let(:mock_response) { unencrypted_response }
+      it { expect(pdfinfo.changeable?).to eq(true) }
+    end
+    context 'given a pdf that is not changeable' do
+      let(:mock_response) { encrypted_response }
+      it { expect(pdfinfo.changeable?).to eq(false) }
+    end
+  end
+
+  describe "#modifiable? (alias to changeable?)" do
+    context 'given a pdf that is changeable' do
+      let(:mock_response) { unencrypted_response }
+      it { expect(pdfinfo.modifiable?).to eq(true) }
+    end
+    context 'given a pdf that is not changeable' do
+      let(:mock_response) { encrypted_response }
+      it { expect(pdfinfo.modifiable?).to eq(false) }
+    end
+  end
+
+  describe '#annotatable?' do
+    context 'given a pdf that is annotatable' do
+      let(:mock_response) { unencrypted_response }
+      it { expect(pdfinfo.annotatable?).to eq(true) }
+    end
+    context 'given a pdf that is not annotatable' do
+      let(:mock_response) { encrypted_response }
+      it { expect(pdfinfo.annotatable?).to eq(false) }
+    end
+  end
+
+  describe '#width' do
     it { expect(pdfinfo.width).to eq(595.28) }
   end
 
-  describe 'height' do
+  describe '#height' do
     it { expect(pdfinfo.height).to eq(841.89) }
   end
 
-  describe 'size' do
+  describe '#size' do
     it 'returns a fixnm value for the file size in bytes' do
       expect(pdfinfo.file_size).to eq(2867)
     end
   end
 
-  describe 'pdf_version' do
+  describe '#pdf_version' do
     it 'returns a string value for the PDF spec version' do
       expect(pdfinfo.pdf_version).to eq('1.3')
     end
