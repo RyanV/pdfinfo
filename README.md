@@ -1,6 +1,7 @@
 # Pdfinfo
 
 Simple ruby wrapper around the pdfinfo command
+NOTE: This gem is only intended to provide quick access to the metadata returned by the pdfinfo command without flags
 
 ## Depdendecies
 
