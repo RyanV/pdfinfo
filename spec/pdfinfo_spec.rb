@@ -12,13 +12,15 @@ RSpec.describe Pdfinfo do
     response.sub(/(?<=#{key}:)(.+)$/, new_value)
   end
 
-  specify "mock responses match" do
-    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
-    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
+  before(:each) do |ex|
+    unless ex.metadata[:skip_mock_response]
+      allow(Open3).to receive(:capture2).and_return([mock_response, nil])
+    end
   end
 
-  before(:each) do
-    allow(Open3).to receive(:capture2).and_return([mock_response, nil])
+  specify "mock responses match", :skip_mock_response do
+    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
+    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
   end
 
   describe '.pdfinfo_command' do
@@ -36,7 +38,7 @@ RSpec.describe Pdfinfo do
   describe '.exec' do
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect(Open3).to receive(:capture2).with("pdfinfo  path/to/file.pdf")
+        expect(Open3).to receive(:capture2).with("pdfinfo path/to/file.pdf")
         Pdfinfo.new("path/to/file.pdf")
       end
     end
@@ -51,6 +53,12 @@ RSpec.describe Pdfinfo do
       it 'runs the pdfinfo command passing the user password flag' do
         expect(Open3).to receive(:capture2).with("pdfinfo -opw bar path/to/file.pdf")
         Pdfinfo.new("path/to/file.pdf", owner_password: 'bar')
+      end
+    end
+    context "when passed a path with spaces" do
+      it 'should escape the file path' do
+        expect(Open3).to receive(:capture2).with("pdfinfo path/to/file\\ with\\ spaces.pdf")
+        Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
   end

@@ -1,4 +1,5 @@
 require 'open3'
+require 'shellwords'
 
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
@@ -20,13 +21,11 @@ class Pdfinfo
 
   def self.exec(file_path, opts = {})
     flags = []
-    if opts[:owner_password]
-      flags << ['-opw', opts[:owner_password]]
-    elsif opts[:user_password]
-      flags << ['-upw', opts[:user_password]]
-    end
+    flags += ['-opw', opts[:owner_password]] if opts[:owner_password]
+    flags += ['-upw', opts[:user_password]] if opts[:user_password]
 
-    stdout, status = Open3.capture2("#{pdfinfo_command} #{flags.join(" ")} #{file_path}")
+    command = Shellwords.join([pdfinfo_command, *flags, file_path])
+    stdout, status = Open3.capture2(command)
     stdout.chomp
   end
 
