@@ -26,7 +26,7 @@ class Pdfinfo
       flags << ['-upw', opts[:user_password]]
     end
 
-    stdout, stderr, status = Open3.capture2e("#{pdfinfo_command} #{flags.join(" ")} #{file_path}")
+    stdout, status = Open3.capture2("#{pdfinfo_command} #{flags.join(" ")} #{file_path}")
     stdout.chomp
   end
 
