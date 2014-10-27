@@ -10,6 +10,7 @@ class Pdfinfo
     :author,
     :creator,
     :creation_date,
+    :usage_rights,
     :producer,
     :form,
     :page_count,
@@ -45,6 +46,17 @@ class Pdfinfo
     @form           = info_hash['Form']
     @page_count     = info_hash['Pages'].to_i
     @encrypted      = !!(info_hash['Encrypted'] =~ /yes/)
+
+    raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
+    booleanize_usage_right = lambda {|val| !(raw_usage_rights[val] == 'no') }
+
+    @usage_rights = {}.tap do |ur|
+      ur[:print]     = booleanize_usage_right.call('print')
+      ur[:copy]      = booleanize_usage_right.call('copy')
+      ur[:change]    = booleanize_usage_right.call('change')
+      ur[:add_notes] = booleanize_usage_right.call('addNotes')
+    end
+
     @width, @height = extract_page_dimensions(info_hash['Page size'])
     @file_size      = info_hash['File size'].to_i
     @pdf_version    = info_hash['PDF version']

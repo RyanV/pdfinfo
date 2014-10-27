@@ -153,6 +153,31 @@ RSpec.describe Pdfinfo do
     end
   end
 
+  describe '#usage_rights' do
+    context 'given encrypted pdf (all flags off)' do
+      let(:mock_response) { encrypted_response }
+      it 'returns a permissions hash' do
+        expect(pdfinfo.usage_rights).to eq({
+          print: false,
+          copy: false,
+          change: false,
+          add_notes: false
+        })
+      end
+    end
+    context 'given unencrypted pdf' do
+      let(:mock_response) { unencrypted_response }
+      it 'returns a permissions hash' do
+        expect(pdfinfo.usage_rights).to eq({
+          print: true,
+          copy: true,
+          change: true,
+          add_notes: true
+        })
+      end
+    end
+  end
+
   describe 'width' do
     it { expect(pdfinfo.width).to eq(595.28) }
   end
