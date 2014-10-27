@@ -1,11 +1,12 @@
 # Pdfinfo
 
-Simple ruby wrapper around the pdfinfo command
-NOTE: This gem is only intended to provide quick access to the metadata returned by the pdfinfo command without flags
+Simple ruby wrapper around the pdfinfo command.
+This gem was written and tested around xpdf version 3.04. 
+
 
 ## Depdendecies
 
-usage of this gem assumes that you have xpdf installed.  The fastest way to install xpdf:
+usage of this gem assumes that you have xpdf installed (which gives us access to the pdfinfo command).  The fastest way to install xpdf:
 
     $ brew install xpdf
     
