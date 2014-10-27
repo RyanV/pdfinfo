@@ -62,6 +62,13 @@ RSpec.describe Pdfinfo do
         Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
+
+    context "when given a file with invalid UTF-8 metadata" do
+      let(:mock_response) { modified_response(unencrypted_response, 'Title', "\xFE\xFF")}
+      it 'should parse correctly' do
+        expect { Pdfinfo.new('path/to/file.pdf') }.not_to raise_exception
+      end
+    end
   end
 
   describe '#title' do

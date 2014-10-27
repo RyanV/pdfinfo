@@ -53,4 +53,5 @@ task :generate_fixtures do
 
   PdfGenerator.generate("spec/fixtures/pdfs/test.pdf")
   PdfGenerator.generate("spec/fixtures/pdfs/encrypted.pdf", encryption: true)
+  Prawn::Document.generate(File.join(PdfGenerator::ROOT_DIR, 'spec/fixtures/pdfs/invalid_utf-8.pdf')) { text("\xFE\xFF") }
 end

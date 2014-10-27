@@ -5,4 +5,4 @@ RSpec::Core::RakeTask.new(:spec)
 
 task :default => :spec
 
-load File.expand_path("../lib/tasks/generate_pdf.rake", __FILE__)
+load File.expand_path("../lib/tasks/generate_fixtures.rake", __FILE__)
