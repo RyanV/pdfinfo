@@ -1,5 +1,4 @@
 require 'open3'
-require 'pathname'
 
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/

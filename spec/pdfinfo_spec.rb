@@ -11,6 +11,7 @@ RSpec.describe Pdfinfo do
   def modified_response(response, key, new_value = '')
     response.sub(/(?<=#{key}:)(.+)$/, new_value)
   end
+
   specify "mock responses match" do
     expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
     expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
