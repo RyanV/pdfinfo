@@ -21,12 +21,13 @@ class Pdfinfo
 
   def self.exec(file_path, opts = {})
     flags = []
-    flags += ['-opw', opts[:owner_password]] if opts[:owner_password]
-    flags += ['-upw', opts[:user_password]] if opts[:user_password]
+    flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
+    flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
+    flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
 
     command = Shellwords.join([pdfinfo_command, *flags, file_path])
     stdout, status = Open3.capture2(command)
-    stdout.chomp
+    stdout.encode('UTF-8', invalid: :replace, replace: '')
   end
 
   def self.pdfinfo_command
@@ -40,17 +41,20 @@ class Pdfinfo
   def initialize(source_path, opts = {})
     info_hash = parse_shell_response(Pdfinfo.exec(source_path, opts))
 
-    @title          = info_hash['Title'].empty? ? nil : info_hash['Title']
-    @subject        = info_hash['Subject'].empty? ? nil : info_hash['Subject']
-    @keywords       = info_hash['Keywords'].empty? ? [] : info_hash['Keywords'].split(/\s/)
-    @author         = info_hash['Author'].empty? ? nil : info_hash['Author']
-    @creator        = info_hash['Creator'].empty? ? nil : info_hash['Creator']
-    @producer       = info_hash['Producer'].empty? ? nil : info_hash['Producer']
-    @creation_date  = info_hash['CreationDate'].empty? ? nil : Time.parse(info_hash['CreationDate'])
+    @title          = presence(info_hash['Title'])
+    @subject        = presence(info_hash['Subject'])
+    @author         = presence(info_hash['Author'])
+    @creator        = presence(info_hash['Creator'])
+    @producer       = presence(info_hash['Producer'])
     @tagged         = !!(info_hash['Tagged'] =~ /yes/)
-    @form           = info_hash['Form']
-    @page_count     = info_hash['Pages'].to_i
     @encrypted      = !!(info_hash['Encrypted'] =~ /yes/)
+    @page_count     = info_hash['Pages'].to_i
+    @file_size      = info_hash['File size'].to_i
+    @form           = info_hash['Form']
+    @pdf_version    = info_hash['PDF version']
+
+    @keywords       = (info_hash['Keywords'] || "").split(/\s/)
+    @creation_date  = presence(info_hash['CreationDate']) ? Time.parse(info_hash['CreationDate']) : nil
 
     raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
     booleanize_usage_right = lambda {|val| !(raw_usage_rights[val] == 'no') }
@@ -63,8 +67,6 @@ class Pdfinfo
     end
 
     @width, @height = extract_page_dimensions(info_hash['Page size'])
-    @file_size      = info_hash['File size'].to_i
-    @pdf_version    = info_hash['PDF version']
   end
 
   def tagged?
@@ -93,6 +95,9 @@ class Pdfinfo
   end
 
   private
+  def presence(val)
+    (val.nil? || val.empty?) ? nil : val
+  end
   def parse_shell_response(response_str)
     Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
   end

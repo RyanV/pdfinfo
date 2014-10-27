@@ -38,26 +38,27 @@ RSpec.describe Pdfinfo do
   describe '.exec' do
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect(Open3).to receive(:capture2).with("pdfinfo path/to/file.pdf")
+        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 path/to/file.pdf")
         Pdfinfo.new("path/to/file.pdf")
       end
     end
 
     context "passing in :user_password" do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -upw foo path/to/file.pdf")
+        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 -upw foo path/to/file.pdf")
         Pdfinfo.new("path/to/file.pdf", user_password: 'foo')
       end
     end
     context 'passing in :owner_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -opw bar path/to/file.pdf")
+        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 -opw bar path/to/file.pdf")
         Pdfinfo.new("path/to/file.pdf", owner_password: 'bar')
       end
     end
+
     context "when passed a path with spaces" do
       it 'should escape the file path' do
-        expect(Open3).to receive(:capture2).with("pdfinfo path/to/file\\ with\\ spaces.pdf")
+        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
         Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
@@ -83,8 +84,14 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.subject).to eq('Pdfinfo Subject')
       end
     end
-    context 'when title is not present' do
+    context 'when subject value is not present' do
       let(:mock_response) { modified_response(unencrypted_response, 'Subject', '') }
+      it 'returns nil' do
+        expect(pdfinfo.subject).to be_nil
+      end
+    end
+    context 'when subject key is not present' do
+      let(:mock_response) { unencrypted_response.sub(/^Subject.*\n/, '') }
       it 'returns nil' do
         expect(pdfinfo.subject).to be_nil
       end
@@ -97,8 +104,14 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.keywords).to eq(['Keyword1', 'Keyword2'])
       end
     end
-    context 'when keywords is not present' do
+    context 'when keywords value is not present' do
       let(:mock_response) { modified_response(unencrypted_response, 'Keywords', '') }
+      it 'returns an empty array' do
+        expect(pdfinfo.keywords).to eq([])
+      end
+    end
+    context 'when keywords key is not present' do
+      let(:mock_response) { unencrypted_response.sub(/^Keywords.*\n/, '') }
       it 'returns an empty array' do
         expect(pdfinfo.keywords).to eq([])
       end
@@ -128,8 +141,14 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.creation_date).to eq(Time.parse("2014-10-26 18:23:25 -0700"))
       end
     end
-    context 'when creation date is not present' do
+    context 'when creation date value is not present' do
       let(:mock_response) { modified_response(unencrypted_response, 'CreationDate', '') }
+      it 'returns nil' do
+        expect(pdfinfo.creation_date).to be_nil
+      end
+    end
+    context 'when creation date key is not present' do
+      let(:mock_response) { unencrypted_response.sub(/^CreationDate.*\n/, '') }
       it 'returns nil' do
         expect(pdfinfo.creation_date).to be_nil
       end
