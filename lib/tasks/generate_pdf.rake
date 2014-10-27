@@ -1,3 +1,5 @@
+require 'time'
+
 desc 'generates pdf for testing'
 task :generate_fixtures do
   class PdfGenerator
@@ -9,7 +11,7 @@ task :generate_fixtures do
       Keywords: "Keyword1 Keyword2",
       Creator: "Pdfinfo Creator",
       Producer: "Pdfinfo Producer",
-      CreationDate: Time.utc(2014, "oct", 26, 16, 0, 0)
+      CreationDate: Time.parse("2014-10-26 18:23:25 -0700")
     }
     ENCRYPTION_PERMISSIONS = {
       print_document: false,
@@ -22,12 +24,6 @@ task :generate_fixtures do
       owner_password: 'bar',
       permissions: ENCRYPTION_PERMISSIONS
     }
-    PAGE_OPTIONS = [
-      {size: [100, 200], layout: :portrait},
-      {size: [200, 300], layout: :portrait},
-      {size: [200, 100], layout: :landscape},
-      {size: [300, 200], layout: :landscape},
-    ]
 
     def self.generate(dest_path, opts = {})
       new(opts).write_to(dest_path)

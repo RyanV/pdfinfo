@@ -28,6 +28,79 @@ RSpec.describe Pdfinfo do
     end
   end
 
+  describe '#title' do
+    context 'when given a title' do
+      it 'returns the title' do
+        expect(pdfinfo.title).to eq('Pdfinfo Title')
+      end
+    end
+    context 'when title is not present' do
+      let(:mock_response) { "Title: \n" }
+      it 'returns nil' do
+        expect(pdfinfo.title).to be_nil
+      end
+    end
+  end
+
+  describe '#subject' do
+    context 'when given a subject' do
+      it 'returns the subject' do
+        expect(pdfinfo.subject).to eq('Pdfinfo Subject')
+      end
+    end
+    context 'when title is not present' do
+      let(:mock_response) { "Subject: \n" }
+      it 'returns nil' do
+        expect(pdfinfo.title).to be_nil
+      end
+    end
+  end
+
+  describe '#keywords' do
+    context 'when given keywords' do
+      it 'returns the keywords' do
+        expect(pdfinfo.keywords).to eq(['Keyword1', 'Keyword2'])
+      end
+    end
+    context 'when title is not present' do
+      let(:mock_response) { "Keywords: \n" }
+      it 'returns an empty array' do
+        expect(pdfinfo.keywords).to eq([])
+      end
+    end
+  end
+
+  describe '#author' do
+    context 'when given an author' do
+      it 'returns the author' do
+        expect(pdfinfo.author).to eq('Pdfinfo Author')
+      end
+    end
+    context 'when title is not present' do
+      let(:mock_response) { "Author: \n" }
+      it 'returns nil' do
+        expect(pdfinfo.title).to be_nil
+      end
+    end
+  end
+
+  describe '#creation_date' do
+    context 'when given an author' do
+      it 'returns a time object' do
+        expect(pdfinfo.creation_date).to be_an_instance_of(Time)
+      end
+      it 'returns the time correctly parsed' do
+        expect(pdfinfo.creation_date).to eq(Time.parse("2014-10-26 18:23:25 -0700"))
+      end
+    end
+    context 'when creation date is not present' do
+      let(:mock_response) { "CreationDate: \n" }
+      it 'returns nil' do
+        expect(pdfinfo.creation_date).to be_nil
+      end
+    end
+  end
+
   describe '#creator' do
     context 'when given a creator' do
       it { expect(pdfinfo.creator).to eq('Pdfinfo Creator') }

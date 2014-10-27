@@ -4,7 +4,12 @@ require 'pathname'
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
 
-  attr_reader :creator,
+  attr_reader :title,
+    :subject,
+    :keywords,
+    :author,
+    :creator,
+    :creation_date,
     :producer,
     :form,
     :page_count,
@@ -29,8 +34,13 @@ class Pdfinfo
   def initialize(source_path)
     info_hash = parse_shell_response(Pdfinfo.exec(source_path))
 
+    @title          = info_hash['Title']
+    @subject        = info_hash['Subject']
+    @keywords       = info_hash['Keywords'] ? info_hash['Keywords'].split(/\s/) : []
+    @author         = info_hash['Author']
     @creator        = info_hash['Creator']
     @producer       = info_hash['Producer']
+    @creation_date  = info_hash['CreationDate'] ? Time.parse(info_hash['CreationDate']) : nil
     @tagged         = !!(info_hash['Tagged'] =~ /yes/)
     @form           = info_hash['Form']
     @page_count     = info_hash['Pages'].to_i
