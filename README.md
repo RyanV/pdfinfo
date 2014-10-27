@@ -28,6 +28,8 @@ Or install it yourself as:
 
 
 ```ruby
+pdfinfo = Pdfinfo.new("path/to/file.pdf")
+
 pdfinfo.title         #=> "Title" # or nil
 pdfinfo.subject       #=> "Subject" # or nil
 pdfinfo.keywords      #=> ["Keyword1", "Keyword2"] # or nil
