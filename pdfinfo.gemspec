@@ -1,21 +1,23 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'pdfinfo/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'pdfinfo'
   spec.version       = Pdfinfo::VERSION
-  spec.authors       = ['Ryan Venegas']
-  spec.email         = ['RVenegas2@Gmail.com']
   spec.summary       = %q{Simple ruby wrapper around the pdfinfo executable}
   spec.description   = %q{Simple ruby wrapper around the pdfinfo executable}
-  spec.homepage      = ''
+
+  spec.required_ruby_version     = '>= 1.9.3'
+
   spec.license       = 'MIT'
 
-  spec.files         = `git ls-files -z`.split("\x0")
-  spec.test_files    = spec.files.grep(%r{^spec/})
-  spec.require_paths = ['lib']
+  spec.author        = 'Ryan Venegas'
+  spec.email         = 'rvenegas2@gmail.com'
+  spec.homepage      = 'https://github.com/RyanV/pdfinfo'
+
+  spec.files         = %w(lib/pdfinfo.rb)
+
+  spec.require_paths = %w(lib)
 
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'prawn'
