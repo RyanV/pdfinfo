@@ -71,6 +71,12 @@ Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
 Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
 ```
 
+## Recent Changes
+#### v1.1.0
+* Pdfinfo::CommandNotFound raised when pdfinfo command can't be found
+* Fixes issue with string re-encoding for non- UTF-8 characters in ruby 1.9.3
+* Pdfinfo#exec now correctly supports being passed a Pathname object
+
 ## Running specs
 
 generate pdf fixtures by first running 
@@ -80,14 +86,6 @@ generate pdf fixtures by first running
 Then run specs by running
 
     $ rake
-
-## Contributing
-
-1. Fork it ( https://github.com/[my-github-username]/pdfinfo/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
 
 ## TODO
 * Error handling
