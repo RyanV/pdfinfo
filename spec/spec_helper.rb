@@ -22,9 +22,18 @@ RSpec.configure do |config|
     Pdfinfo.instance_variable_set(:@pdfinfo_command, nil)
   end
 
-  require 'support/fixture_path'
+  module FixturePath
+    def fixture_path(path)
+      require 'pathname'
+      Pathname.new(File.expand_path(File.join('../fixtures', path.to_s), __FILE__))
+    end
+    alias_method :fixture, :fixture_path
+  end
+
   config.include FixturePath
 end
 
-require 'coveralls'
-Coveralls.wear!
+if ENV['CI'] || ENV['COVERAGE']
+  require 'coveralls'
+  Coveralls.wear!
+end
