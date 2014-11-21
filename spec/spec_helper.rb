@@ -1,4 +1,4 @@
-require File.expand_path("../../lib/pdfinfo", __FILE__)
+require File.expand_path('../../lib/pdfinfo', __FILE__)
 
 RSpec.configure do |config|
   config.expect_with :rspec
@@ -22,7 +22,7 @@ RSpec.configure do |config|
     Pdfinfo.instance_variable_set(:@pdfinfo_command, nil)
   end
 
-  require "support/fixture_path"
+  require 'support/fixture_path'
   config.include FixturePath
 end
 

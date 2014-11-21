@@ -4,15 +4,15 @@ require 'pathname'
 desc 'generates pdf for testing'
 task :generate_fixtures do
   class PdfGenerator
-    ROOT_DIR = File.expand_path("../../..", __FILE__)
+    ROOT_DIR = File.expand_path('../../..', __FILE__)
     METADATA_OPTIONS = {
-      Title: "Pdfinfo Title",
-      Author: "Pdfinfo Author",
-      Subject: "Pdfinfo Subject",
-      Keywords: "Keyword1 Keyword2",
-      Creator: "Pdfinfo Creator",
-      Producer: "Pdfinfo Producer",
-      CreationDate: Time.parse("2014-10-26 18:23:25").utc
+      Title: 'Pdfinfo Title',
+      Author: 'Pdfinfo Author',
+      Subject: 'Pdfinfo Subject',
+      Keywords: 'Keyword1 Keyword2',
+      Creator: 'Pdfinfo Creator',
+      Producer: 'Pdfinfo Producer',
+      CreationDate: Time.parse('2014-10-26 18:23:25').utc
     }
     ENCRYPTION_PERMISSIONS = {
       print_document: false,
@@ -25,7 +25,7 @@ task :generate_fixtures do
       owner_password: 'bar',
       permissions: ENCRYPTION_PERMISSIONS
     }
-    WRITE_PATH_PREFIX = "spec/fixtures/pdfs"
+    WRITE_PATH_PREFIX = 'spec/fixtures/pdfs'
     def self.generate(dest_path, opts = {}, &block)
       new(opts).write_to(dest_path, &block)
     end

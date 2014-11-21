@@ -68,7 +68,7 @@ class Pdfinfo
     @form           = info_hash['Form']
     @pdf_version    = info_hash['PDF version']
 
-    @keywords       = (info_hash['Keywords'] || "").split(/\s/)
+    @keywords       = (info_hash['Keywords'] || '').split(/\s/)
     @creation_date  = presence(info_hash['CreationDate']) ? Time.parse(info_hash['CreationDate']) : nil
 
     raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]

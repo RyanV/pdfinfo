@@ -21,15 +21,15 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  specify "mock responses match", :skip_mock_response do
-    unless ENV["CI"]
+  specify 'mock responses match', :skip_mock_response do
+    unless ENV['CI']
       expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
       expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
     end
   end
 
   describe '.pdfinfo_command' do
-    it "falls back to pdfinfo" do
+    it 'falls back to pdfinfo' do
       Pdfinfo.pdfinfo_command = nil
       expect(Pdfinfo.pdfinfo_command).to eq('pdfinfo')
     end
@@ -41,7 +41,7 @@ RSpec.describe Pdfinfo do
   end
 
   describe '.pdfinfo_command?' do
-    it "checks if the set command exists" do
+    it 'checks if the set command exists' do
       begin
         Pdfinfo.pdfinfo_command = 'a_command_that_doesnt_exist'
         expect(Pdfinfo.pdfinfo_command?).to eq false
@@ -56,40 +56,40 @@ RSpec.describe Pdfinfo do
   describe '.exec' do
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 path/to/file.pdf")
-        Pdfinfo.new("path/to/file.pdf")
+        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 path/to/file.pdf')
+        Pdfinfo.new('path/to/file.pdf')
       end
     end
 
-    context "passing in :user_password" do
+    context 'passing in :user_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 -upw foo path/to/file.pdf")
-        Pdfinfo.new("path/to/file.pdf", user_password: 'foo')
+        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 -upw foo path/to/file.pdf')
+        Pdfinfo.new('path/to/file.pdf', user_password: 'foo')
       end
     end
     context 'passing in :owner_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 -opw bar path/to/file.pdf")
-        Pdfinfo.new("path/to/file.pdf", owner_password: 'bar')
+        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 -opw bar path/to/file.pdf')
+        Pdfinfo.new('path/to/file.pdf', owner_password: 'bar')
       end
     end
 
-    context "when passed a path with spaces" do
+    context 'when passed a path with spaces' do
       it 'should escape the file path' do
         expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
-        Pdfinfo.new("path/to/file with spaces.pdf")
+        Pdfinfo.new('path/to/file with spaces.pdf')
       end
     end
 
-    context "when given a file with invalid UTF-8 metadata" do
+    context 'when given a file with invalid UTF-8 metadata' do
       let(:mock_response) { modified_response(unencrypted_response, 'Title', "\xFE\xFF")}
       it 'should parse correctly' do
         expect { Pdfinfo.new('path/to/file.pdf') }.not_to raise_exception
       end
     end
 
-    context "when the pdfinfo command cant be found" do
-      it "raises an appropriate exception" do
+    context 'when the pdfinfo command cant be found' do
+      it 'raises an appropriate exception' do
         expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
         expect { Pdfinfo.new('path/to/file.pdf') }.to raise_error(Pdfinfo::CommandNotFound)
       end
@@ -133,7 +133,7 @@ RSpec.describe Pdfinfo do
   describe '#keywords' do
     context 'when given keywords' do
       it 'returns the keywords' do
-        expect(pdfinfo.keywords).to eq(['Keyword1', 'Keyword2'])
+        expect(pdfinfo.keywords).to eq(%w(Keyword1 Keyword2))
       end
     end
     context 'when keywords value is not present' do
@@ -170,7 +170,7 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.creation_date).to be_an_instance_of(Time)
       end
       it 'returns the time correctly parsed' do
-        expect(pdfinfo.creation_date).to eq(Time.parse("2014-10-26 18:23:25").utc)
+        expect(pdfinfo.creation_date).to eq(Time.parse('2014-10-26 18:23:25').utc)
       end
     end
     context 'when creation date value is not present' do
@@ -297,7 +297,7 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe "#modifiable? (alias to changeable?)" do
+  describe '#modifiable? (alias to changeable?)' do
     context 'given a pdf that is changeable' do
       let(:mock_response) { unencrypted_response }
       it { expect(pdfinfo.modifiable?).to eq(true) }

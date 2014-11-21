@@ -1,6 +1,9 @@
 # Pdfinfo
-[![Gem Version](https://badge.fury.io/rb/pdfinfo.svg)](http://badge.fury.io/rb/pdfinfo) [![Build Status](https://travis-ci.org/RyanV/pdfinfo.svg?branch=master)](https://rubygems.org/gems/pdfinfo)[![Coverage Status](https://img.shields.io/coveralls/RyanV/pdfinfo.svg)](https://coveralls.io/r/RyanV/pdfinfo)
-Simple ruby wrapper around the pdfinfo command.
+[![Gem Version](https://badge.fury.io/rb/pdfinfo.svg)](http://badge.fury.io/rb/pdfinfo)
+[![Build Status](https://travis-ci.org/RyanV/pdfinfo.svg?branch=master)](https://rubygems.org/gems/pdfinfo)
+[![Coverage Status](https://img.shields.io/coveralls/RyanV/pdfinfo.svg)](https://coveralls.io/r/RyanV/pdfinfo)
+
+Simple ruby wrapper around pdfinfo utility.
 This gem was written and tested around xpdf version 3.04. 
 
 
