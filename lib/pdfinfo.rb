@@ -36,7 +36,7 @@ class Pdfinfo
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
     flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
 
-    command = Shellwords.join([pdfinfo_command, *flags, file_path])
+    command = Shellwords.join([pdfinfo_command, *flags, file_path.to_s])
     stdout, status = Open3.capture2(command)
     stdout.encode('UTF-8', invalid: :replace, replace: '')
   end
