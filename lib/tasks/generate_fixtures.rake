@@ -12,7 +12,7 @@ task :generate_fixtures do
       Keywords: "Keyword1 Keyword2",
       Creator: "Pdfinfo Creator",
       Producer: "Pdfinfo Producer",
-      CreationDate: Time.parse("2014-10-26 18:23:25 -0700")
+      CreationDate: Time.parse("2014-10-26 18:23:25").utc
     }
     ENCRYPTION_PERMISSIONS = {
       print_document: false,
