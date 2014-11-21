@@ -70,7 +70,7 @@ class Pdfinfo
     @pdf_version    = info_hash['PDF version']
 
     @keywords       = (info_hash['Keywords'] || '').split(/\s/)
-    @creation_date  = presence(info_hash['CreationDate']) ? Time.parse(info_hash['CreationDate']) : nil
+    @creation_date  = parse_time(info_hash['CreationDate'])
 
     raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
     booleanize_usage_right = lambda {|val| !(raw_usage_rights[val] == 'no') }
@@ -117,5 +117,12 @@ class Pdfinfo
   def extract_page_dimensions(str)
     return unless str
     str.match(DIMENSIONS_REGEXP).captures.map(&:to_f)
+  end
+
+  def parse_time(str)
+    presence(str) ? Time.parse(str) : nil
+  rescue ArgumentError => e
+    warn(e.message)
+    nil
   end
 end

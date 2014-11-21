@@ -1,6 +1,6 @@
 # Pdfinfo
 [![Gem Version](https://badge.fury.io/rb/pdfinfo.svg)](http://badge.fury.io/rb/pdfinfo)
-[![Build Status](https://travis-ci.org/RyanV/pdfinfo.svg?branch=master)](https://rubygems.org/gems/pdfinfo)
+[![Build Status](https://travis-ci.org/RyanV/pdfinfo.svg?branch=master)](https://travis-ci.org/RyanV/pdfinfo)
 [![Coverage Status](https://img.shields.io/coveralls/RyanV/pdfinfo.svg)](https://coveralls.io/r/RyanV/pdfinfo)
 
 Simple ruby wrapper around pdfinfo utility.
@@ -72,6 +72,10 @@ Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
 ```
 
 ## Recent Changes
+#### v1.2.0
+* add #to_hash method which will output the parsed data as a hash.
+* rescue from Time.parse on invalid string format
+
 #### v1.1.0
 * Pdfinfo::CommandNotFound raised when pdfinfo command can't be found
 * Fixes issue with string re-encoding for non- UTF-8 characters in ruby 1.9.3
@@ -90,4 +94,3 @@ Then run specs by running
 ## TODO
 * Error handling
 * type coersion is getting messy in initialize.  refactor.
-* Add #to_hash/#to_h/#as_json method to output all metadata as a hash
