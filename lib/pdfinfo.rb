@@ -38,7 +38,7 @@ class Pdfinfo
 
     command = Shellwords.join([pdfinfo_command, *flags, file_path.to_s])
     stdout, status = Open3.capture2(command)
-    stdout.encode('UTF-8', invalid: :replace, replace: '')
+    stdout.encode('UTF-8', invalid: :replace, replace: '', undef: :replace)
   end
 
   def self.pdfinfo_command
