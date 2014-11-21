@@ -91,7 +91,7 @@ RSpec.describe Pdfinfo do
     context "when the pdfinfo command cant be found" do
       it "raises an appropriate exception" do
         expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
-        expect { Pdfinfo.new('path/to/file.pdf') }.to raise_error(Errno::ENODEV, 'Operation not supported by device - pdfinfo')
+        expect { Pdfinfo.new('path/to/file.pdf') }.to raise_error(Pdfinfo::CommandNotFound)
       end
     end
   end

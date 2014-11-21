@@ -4,6 +4,16 @@ require 'shellwords'
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
 
+  class PdfinfoError < ::StandardError
+  end
+
+  class CommandNotFound < PdfinfoError
+    def initialize(command)
+      super("Command Not Found - '#{command}'")
+    end
+  end
+
+
   attr_reader :title,
     :subject,
     :keywords,
@@ -20,7 +30,7 @@ class Pdfinfo
     :pdf_version
 
   def self.exec(file_path, opts = {})
-    raise Errno::ENODEV.new("pdfinfo") unless pdfinfo_command?
+    raise CommandNotFound, 'pdfinfo' unless pdfinfo_command?
     flags = []
     flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
