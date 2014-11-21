@@ -26,3 +26,5 @@ RSpec.configure do |config|
   config.include FixturePath
 end
 
+require 'coveralls'
+Coveralls.wear!
