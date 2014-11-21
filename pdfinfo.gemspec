@@ -1,5 +1,5 @@
 # coding: utf-8
-require 'pdfinfo/version'
+require File.expand_path('../lib/pdfinfo/version', __FILE__)
 
 Gem::Specification.new do |spec|
   spec.name          = 'pdfinfo'
