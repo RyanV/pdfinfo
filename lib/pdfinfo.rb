@@ -1,5 +1,6 @@
 require 'open3'
 require 'shellwords'
+require 'time'
 
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
@@ -101,6 +102,9 @@ class Pdfinfo
     @usage_rights[:add_notes]
   end
 
+  def to_hash
+    instance_variables.inject({}) {|h, var| h[var[1..-1].to_sym] = instance_variable_get(var); h }
+  end
   private
   def presence(val)
     (val.nil? || val.empty?) ? nil : val
