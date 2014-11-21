@@ -7,9 +7,12 @@ RSpec.describe Pdfinfo do
   let(:unencrypted_response) { File.read(fixture_path('shell_responses/test.txt')).chomp }
   let(:mock_response) { unencrypted_response }
 
-
   def modified_response(response, key, new_value = '')
     response.sub(/(?<=#{key}:)(.+)$/, new_value)
+  end
+
+  def response_without_key(response, key)
+    response.sub(%r{#{key}.*\n}, '')
   end
 
   before(:each) do |ex|
@@ -19,8 +22,10 @@ RSpec.describe Pdfinfo do
   end
 
   specify "mock responses match", :skip_mock_response do
-    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
-    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
+    unless ENV["CI"]
+      expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
+      expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
+    end
   end
 
   describe '.pdfinfo_command' do
@@ -32,6 +37,19 @@ RSpec.describe Pdfinfo do
     it 'allows the command to be changed' do
       Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
       expect(Pdfinfo.pdfinfo_command).to eq('/another/bin/path/pdfinfo')
+    end
+  end
+
+  describe '.pdfinfo_command?' do
+    it "checks if the set command exists" do
+      begin
+        Pdfinfo.pdfinfo_command = 'a_command_that_doesnt_exist'
+        expect(Pdfinfo.pdfinfo_command?).to eq false
+        Pdfinfo.pdfinfo_command = 'echo'
+        expect(Pdfinfo.pdfinfo_command?).to eq true
+      ensure
+        Pdfinfo.pdfinfo_command = nil
+      end
     end
   end
 
@@ -69,6 +87,13 @@ RSpec.describe Pdfinfo do
         expect { Pdfinfo.new('path/to/file.pdf') }.not_to raise_exception
       end
     end
+
+    context "when the pdfinfo command cant be found" do
+      it "raises an appropriate exception" do
+        expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
+        expect { Pdfinfo.new('path/to/file.pdf') }.to raise_error(Errno::ENODEV, 'Operation not supported by device - pdfinfo')
+      end
+    end
   end
 
   describe '#title' do
@@ -98,7 +123,7 @@ RSpec.describe Pdfinfo do
       end
     end
     context 'when subject key is not present' do
-      let(:mock_response) { unencrypted_response.sub(/^Subject.*\n/, '') }
+      let(:mock_response) { response_without_key(unencrypted_response, 'Subject') }
       it 'returns nil' do
         expect(pdfinfo.subject).to be_nil
       end
@@ -145,7 +170,7 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.creation_date).to be_an_instance_of(Time)
       end
       it 'returns the time correctly parsed' do
-        expect(pdfinfo.creation_date).to eq(Time.parse("2014-10-26 18:23:25 -0700"))
+        expect(pdfinfo.creation_date).to eq(Time.parse("2014-10-26 18:23:25").utc)
       end
     end
     context 'when creation date value is not present' do
@@ -304,7 +329,7 @@ RSpec.describe Pdfinfo do
 
   describe '#size' do
     it 'returns a fixnm value for the file size in bytes' do
-      expect(pdfinfo.file_size).to eq(2867)
+      expect(pdfinfo.file_size).to be_a(Fixnum).and be_between(2800, 2900)
     end
   end
 

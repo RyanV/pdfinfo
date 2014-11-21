@@ -1,19 +1,11 @@
-require File.expand_path("#{__dir__}/../lib/pdfinfo")
+require File.expand_path("../../lib/pdfinfo", __FILE__)
 
 RSpec.configure do |config|
-  config.expect_with :rspec do |expectations|
-    # expectations.include_chain_clauses_in_custom_matcher_descriptions = true
-  end
-
-  config.mock_with :rspec do |mocks|
-    mocks.verify_partial_doubles = true
-  end
-
+  config.expect_with :rspec
+  config.mock_with :rspec
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
-
   config.disable_monkey_patching!
-
   config.warnings = false
 
   if config.files_to_run.one?
@@ -29,8 +21,8 @@ RSpec.configure do |config|
   config.before(:each) do
     Pdfinfo.instance_variable_set(:@pdfinfo_command, nil)
   end
+
+  require "support/fixture_path"
+  config.include FixturePath
 end
 
-def fixture_path(path)
-  Pathname.new(File.expand_path(File.join("../fixtures", path), __FILE__))
-end

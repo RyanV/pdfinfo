@@ -20,6 +20,7 @@ class Pdfinfo
     :pdf_version
 
   def self.exec(file_path, opts = {})
+    raise Errno::ENODEV.new("pdfinfo") unless pdfinfo_command?
     flags = []
     flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
@@ -36,6 +37,10 @@ class Pdfinfo
 
   def self.pdfinfo_command=(cmd)
     @pdfinfo_command = cmd
+  end
+
+  def self.pdfinfo_command?
+    system("type #{pdfinfo_command} >/dev/null 2>&1")
   end
 
   def initialize(source_path, opts = {})
@@ -77,16 +82,8 @@ class Pdfinfo
     @encrypted
   end
 
-  def printable?
-    @usage_rights[:print]
-  end
-
-  def copyable?
-    @usage_rights[:copy]
-  end
-
-  def changeable?
-    @usage_rights[:change]
+  %w(print copy change).each do |ur|
+    define_method("#{ur}able?") { @usage_rights[ur.to_sym] }
   end
   alias modifiable? changeable?
 
@@ -98,6 +95,7 @@ class Pdfinfo
   def presence(val)
     (val.nil? || val.empty?) ? nil : val
   end
+
   def parse_shell_response(response_str)
     Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
   end
