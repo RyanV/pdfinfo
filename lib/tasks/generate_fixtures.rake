@@ -1,4 +1,5 @@
 require 'time'
+require 'pathname'
 
 desc 'generates pdf for testing'
 task :generate_fixtures do
@@ -37,9 +38,10 @@ task :generate_fixtures do
     def write_to(dest_path)
       require 'prawn'
 
-      dest_path = File.join(ROOT_DIR, dest_path)
+      dest_path = Pathname.new(File.join(ROOT_DIR, dest_path))
+      dest_path.mkpath
 
-      Prawn::Document.generate(dest_path, skip_page_creation: true, info: METADATA_OPTIONS, page_size: 'A4') do |pdf|
+      Prawn::Document.generate(dest_path.to_path, skip_page_creation: true, info: METADATA_OPTIONS, page_size: 'A4') do |pdf|
         1.upto(5) do |n|
           pdf.start_new_page
           pdf.text("Page #{n}")
