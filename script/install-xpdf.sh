@@ -1,7 +1,7 @@
 #!/bin/sh
 
 : ${XPDF_VERSION:= "3.04"}
-xpdf_tar = "install/xpdf-$XPDF_VERSION"
+xpdf_tar="install/xpdf-$XPDF_VERSION"
 
 set -ex
 if [[ -f $xpdf_tar ]]; then
