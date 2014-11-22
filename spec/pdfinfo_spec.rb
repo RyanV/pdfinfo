@@ -21,7 +21,7 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  specify 'mock responses match', :skip_mock_response, :pending => "issues with inconsistent fixture generation" do
+  specify 'mock responses match', :skip_mock_response, :skip do
     unless ENV['CI']
       expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
       expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
