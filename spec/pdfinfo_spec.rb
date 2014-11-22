@@ -19,13 +19,15 @@ RSpec.describe Pdfinfo do
     unless ex.metadata[:skip_mock_response]
       allow(Open3).to receive(:capture2).and_return([mock_response, nil])
     end
+    unless ex.metadata[:skip_command_validation_mock]
+      allow(Pdfinfo).to receive(:pdfinfo_command?) { true }
+    end
   end
 
   specify 'mock responses match', :skip_mock_response, :skip do
-    unless ENV['CI']
-      expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
-      expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
-    end
+    expect(Pdfinfo.pdfinfo_command?).to eq(true)
+    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
+    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
   end
 
   describe '.pdfinfo_command' do
@@ -40,7 +42,7 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe '.pdfinfo_command?' do
+  describe '.pdfinfo_command?', :skip_command_validation_mock do
     it 'checks if the set command exists' do
       begin
         Pdfinfo.pdfinfo_command = 'a_command_that_doesnt_exist'
