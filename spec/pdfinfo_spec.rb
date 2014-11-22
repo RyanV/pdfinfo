@@ -344,27 +344,27 @@ RSpec.describe Pdfinfo do
   describe '#as_json' do
     it 'returns a hash of the metadata' do
       expect(pdfinfo.to_hash).to eq({
-            :title => "Pdfinfo Title",
-            :subject => "Pdfinfo Subject",
-            :author => "Pdfinfo Author",
-            :creator => "Pdfinfo Creator",
-            :producer => "Pdfinfo Producer",
-            :tagged => false,
-            :encrypted => false,
-            :page_count => 5,
-            :file_size => 2867,
-            :form => "none",
-            :pdf_version => "1.3",
-            :keywords => ["Keyword1", "Keyword2"],
-            :creation_date => Time.parse('2014-10-26 18:23:25').utc,
-            :usage_rights => {
-              :print => true,
-              :copy => true,
-              :change => true,
-              :add_notes => true
-            },
-            :width => 595.28,
-            :height => 841.89
+        title: "Pdfinfo Title",
+        subject: "Pdfinfo Subject",
+        author: "Pdfinfo Author",
+        creator: "Pdfinfo Creator",
+        producer: "Pdfinfo Producer",
+        tagged: false,
+        encrypted: false,
+        page_count: 5,
+        file_size: 2867,
+        form: "none",
+        pdf_version: "1.3",
+        keywords: ["Keyword1", "Keyword2"],
+        creation_date: Time.parse('2014-10-26 18:23:25').utc,
+        usage_rights: {
+          print: true,
+          copy: true,
+          change: true,
+          add_notes: true
+        },
+        width: 595.28,
+        height: 841.89
           })
     end
   end
