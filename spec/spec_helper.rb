@@ -1,10 +1,6 @@
-if (ARGV & ["--line", "--example"]).empty? # skip focused tests
-  begin
-    require 'coveralls'
-    Coveralls.wear! { add_filter "/spec/" }
-  rescue LoadError
-    # coveralls not installed because of gem versioning
-  end
+if ENV['CI'] && Gem.ruby_version >= Gem::Version.create('1.9.3')
+  require 'coveralls'
+  Coveralls.wear! { add_filter "/spec/" }
 end
 
 require File.expand_path('../../lib/pdfinfo', __FILE__)

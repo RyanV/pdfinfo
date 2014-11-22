@@ -1,5 +1,5 @@
 build
-generate_pdf
+generate_fixtures
 install
 release
 spec
