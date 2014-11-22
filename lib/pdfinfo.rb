@@ -122,7 +122,6 @@ class Pdfinfo
   def parse_time(str)
     presence(str) ? Time.parse(str) : nil
   rescue ArgumentError => e
-    warn(e.message)
     nil
   end
 end
