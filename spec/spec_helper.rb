@@ -1,12 +1,6 @@
 if (ARGV & ["--line", "--example"]).empty? # skip focused tests
-  require 'simplecov'
-
-  if ENV['CI']
-    require 'coveralls'
-    SimpleCov.formatter = Coveralls::SimpleCov::Formatter
-  end
-
-  SimpleCov.start { add_filter "/spec/" }
+  require 'coveralls'
+  Coveralls.wear! { add_filter "/spec/" }
 end
 
 require File.expand_path('../../lib/pdfinfo', __FILE__)
