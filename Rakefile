@@ -9,4 +9,5 @@ rescue LoadError
 end
 
 
-load File.expand_path('../lib/tasks/generate_fixtures.rake', __FILE__)
+# TODO - re-add generate_fixtures task
+# load File.expand_path('../tasks/generate_fixtures.rake', __FILE__)

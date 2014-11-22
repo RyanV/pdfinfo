@@ -13,8 +13,8 @@ rvm:
 #    - env: XPDF_VERSION=2.03
 #    - env: XPDF_VERSION=1.01
 
-before_install:
-  - ./script/install-xpdf.sh
+#before_install:
+#  - ./script/install-xpdf.sh
 
 #before_script:
 #  - bundle exec rake generate_fixtures
