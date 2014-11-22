@@ -1,6 +1,10 @@
 if (ARGV & ["--line", "--example"]).empty? # skip focused tests
-  require 'coveralls'
-  Coveralls.wear! { add_filter "/spec/" }
+  begin
+    require 'coveralls'
+    Coveralls.wear! { add_filter "/spec/" }
+  rescue LoadError
+    # coveralls not installed because of gem versioning
+  end
 end
 
 require File.expand_path('../../lib/pdfinfo', __FILE__)

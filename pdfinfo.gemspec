@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{Simple ruby wrapper around the pdfinfo executable}
   spec.description   = %q{Simple ruby wrapper around the pdfinfo executable}
 
-  spec.required_ruby_version     = '>= 1.9.3'
+  spec.required_ruby_version     = '>= 1.8.7'
 
   spec.license       = 'MIT'
 
@@ -23,5 +23,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'prawn'
   spec.add_development_dependency 'rspec', '~> 3.1.0'
   spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'coveralls'
 end
