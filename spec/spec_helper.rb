@@ -1,4 +1,4 @@
-unless ARGV & ["--line", "--example"] # skip focused tests
+if (ARGV & ["--line", "--example"]).empty? # skip focused tests
   require 'simplecov'
 
   if ENV['CI']
