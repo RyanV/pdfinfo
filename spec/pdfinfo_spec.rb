@@ -366,4 +366,12 @@ RSpec.describe Pdfinfo do
           })
     end
   end
+
+  describe '#parse_time' do
+    context 'when given an invalid time format' do
+      it 'returns nil' do
+        expect(pdfinfo.send(:parse_time, "ten o'clock")).to be_nil
+      end
+    end
+  end
 end

@@ -1,3 +1,14 @@
+unless ARGV & ["--line", "--example"] # skip focused tests
+  require 'simplecov'
+
+  if ENV['CI']
+    require 'coveralls'
+    SimpleCov.formatter = Coveralls::SimpleCov::Formatter
+  end
+
+  SimpleCov.start { add_filter "/spec/" }
+end
+
 require File.expand_path('../../lib/pdfinfo', __FILE__)
 
 RSpec.configure do |config|
@@ -31,9 +42,4 @@ RSpec.configure do |config|
   end
 
   config.include FixturePath
-end
-
-if ENV['CI'] || ENV['COVERAGE']
-  require 'coveralls'
-  Coveralls.wear!
 end
