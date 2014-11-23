@@ -2,19 +2,8 @@ language: ruby
 rvm:
   - 2.1.2
   - 1.9.3
-#  - 1.8.7
-#env:
-#  - XPDF_VERSION=3.04
-#  - XPDF_VERSION=2.03
-#  - XPDF_VERSION=1.01
-#matrix:
-#  allow_failures:
-#    - rvm: 1.8.7
-#    - env: XPDF_VERSION=2.03
-#    - env: XPDF_VERSION=1.01
-
-#before_install:
-#  - ./script/install-xpdf.sh
+before_install:
+  - ./script/install-xpdf.sh
 
 #before_script:
 #  - bundle exec rake generate_fixtures
