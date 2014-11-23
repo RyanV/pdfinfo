@@ -12,20 +12,24 @@ task :generate_fixtures do
       Keywords: 'Keyword1 Keyword2',
       Creator: 'Pdfinfo Creator',
       Producer: 'Pdfinfo Producer',
-      CreationDate: Time.parse('2014-10-26 18:23:25').utc
-    }
+      CreationDate: Time.parse('2014-10-27 01:23:25')
+    }.freeze
+
     ENCRYPTION_PERMISSIONS = {
       print_document: false,
       modify_contents: false,
       copy_contents: false,
       modify_annotations: false
-    }
+    }.freeze
+
     ENCRYPTION_OPTIONS = {
       user_password: 'foo',
       owner_password: 'bar',
       permissions: ENCRYPTION_PERMISSIONS
-    }
+    }.freeze
+
     WRITE_PATH_PREFIX = 'spec/fixtures/pdfs'
+
     def self.generate(dest_path, opts = {}, &block)
       new(opts).write_to(dest_path, &block)
     end

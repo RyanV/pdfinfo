@@ -27,13 +27,21 @@ RSpec.configure do |config|
     Pdfinfo.instance_variable_set(:@pdfinfo_command, nil)
   end
 
-  module FixturePath
-    def fixture_path(path)
-      require 'pathname'
-      Pathname.new(File.expand_path(File.join('../fixtures', path.to_s), __FILE__))
-    end
-    alias_method :fixture, :fixture_path
-  end
+  config.alias_example_to :precondition
 
+  require 'support/fixture_path'
   config.include FixturePath
+
+  require 'support/response_modifier'
+  require 'support/rspec_example_group'
+  config.extend Pdfinfo::RSpec::ExampleGroup::ClassMethods
+
+  config.before(:each) do |ex|
+    allow(Open3).to receive(:capture2).and_wrap_original do |m, command|
+      response, status = m.call(command)
+      modifier = Pdfinfo::ResponseModifier.new(response)
+      response_modification_handler.call(modifier)
+      [modifier.to_s, status]
+    end
+  end
 end

@@ -1,48 +1,33 @@
 require 'spec_helper'
 
 RSpec.describe Pdfinfo do
-  let(:pdf_path) { fixture_path('pdfs/test.pdf') }
-  let(:pdfinfo) { described_class.new(pdf_path) }
-  let(:encrypted_response) { File.read(fixture_path('shell_responses/encrypted.txt')).chomp }
-  let(:unencrypted_response) { File.read(fixture_path('shell_responses/test.txt')).chomp }
-  let(:mock_response) { unencrypted_response }
+  use_unencrypted!
 
-  def modified_response(response, key, new_value = '')
-    response.sub(/(?<=#{key}:)(.+)$/, new_value)
-  end
-
-  def response_without_key(response, key)
-    response.sub(%r{#{key}.*\n}, '')
-  end
-
-  before(:each) do |ex|
-    unless ex.metadata[:skip_mock_response]
-      allow(Open3).to receive(:capture2).and_return([mock_response, nil])
-    end
-    unless ex.metadata[:skip_command_validation_mock]
-      allow(Pdfinfo).to receive(:pdfinfo_command?) { true }
-    end
-  end
-
-  specify 'mock responses match', :skip_mock_response, :skip do
-    expect(Pdfinfo.pdfinfo_command?).to eq(true)
-    expect(`pdfinfo -upw foo #{fixture_path('pdfs/encrypted.pdf')}`.chomp).to eq(encrypted_response)
-    expect(`pdfinfo #{fixture_path('pdfs/test.pdf')}`.chomp).to eq(unencrypted_response)
-  end
+  let(:mock_file_path) { "path/to/file.pdf" }
 
   describe '.pdfinfo_command' do
-    it 'falls back to pdfinfo' do
-      Pdfinfo.pdfinfo_command = nil
-      expect(Pdfinfo.pdfinfo_command).to eq('pdfinfo')
+    subject { described_class.pdfinfo_command }
+
+    context 'when no command is set' do
+      precondition do
+        expect(Pdfinfo.instance_variable_get(:@pdfinfo_command)).to eq(nil)
+      end
+
+      it "falls back to 'pdfinfo'" do
+        is_expected.to eq('pdfinfo')
+      end
     end
 
-    it 'allows the command to be changed' do
-      Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
-      expect(Pdfinfo.pdfinfo_command).to eq('/another/bin/path/pdfinfo')
+    context 'when value is overridden' do
+      before { Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo' }
+
+      it 'uses the override command' do
+        is_expected.to eq('/another/bin/path/pdfinfo')
+      end
     end
   end
 
-  describe '.pdfinfo_command?', :skip_command_validation_mock do
+  describe '.pdfinfo_command?' do
     it 'checks if the set command exists' do
       begin
         Pdfinfo.pdfinfo_command = 'a_command_that_doesnt_exist'
@@ -56,44 +41,54 @@ RSpec.describe Pdfinfo do
   end
 
   describe '.exec' do
+    let(:expected_command) { "pdfinfo -enc UTF-8 #{mock_file_path}" }
+
+    before do |ex|
+      unless ex.metadata[:skip_command_mock]
+        expect(Open3).to receive(:capture2).with(expected_command).and_return(['', nil])
+      end
+    end
+
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 path/to/file.pdf')
-        Pdfinfo.new('path/to/file.pdf')
+        Pdfinfo.exec(mock_file_path)
       end
     end
 
     context 'passing in :user_password' do
+      let(:expected_command) { 'pdfinfo -enc UTF-8 -upw foo path/to/file.pdf' }
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 -upw foo path/to/file.pdf')
-        Pdfinfo.new('path/to/file.pdf', user_password: 'foo')
+        Pdfinfo.exec(mock_file_path, user_password: 'foo')
       end
     end
+
     context 'passing in :owner_password' do
+      let(:expected_command) { "pdfinfo -enc UTF-8 -opw bar path/to/file.pdf" }
       it 'runs the pdfinfo command passing the user password flag' do
-        expect(Open3).to receive(:capture2).with('pdfinfo -enc UTF-8 -opw bar path/to/file.pdf')
-        Pdfinfo.new('path/to/file.pdf', owner_password: 'bar')
+        Pdfinfo.exec(mock_file_path, owner_password: 'bar')
       end
     end
 
     context 'when passed a path with spaces' do
+      let(:expected_command) { "pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
       it 'should escape the file path' do
-        expect(Open3).to receive(:capture2).with("pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
-        Pdfinfo.new('path/to/file with spaces.pdf')
+        Pdfinfo.exec("path/to/file with spaces.pdf")
       end
     end
 
     context 'when given a file with invalid UTF-8 metadata' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Title', "\xFE\xFF")}
-      it 'should parse correctly' do
-        expect { Pdfinfo.new('path/to/file.pdf') }.not_to raise_exception
+      # let(:pdf_file) { fixture_path('pdfs/invalid-utf8.pdf')}
+      # modify_pdfinfo_response {|res| res.set('Title', "\xFE\xFF") }
+
+      it 'should parse correctly', :skip_command_mock do
+        expect { Pdfinfo.exec(fixture_path('pdfs/invalid-utf8.pdf')) }.not_to raise_exception
       end
     end
 
     context 'when the pdfinfo command cant be found' do
-      it 'raises an appropriate exception' do
+      it 'raises an appropriate exception', :skip_command_mock do
         expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
-        expect { Pdfinfo.new('path/to/file.pdf') }.to raise_error(Pdfinfo::CommandNotFound)
+        expect { Pdfinfo.exec(mock_file_path) }.to raise_error(Pdfinfo::CommandNotFound)
       end
     end
   end
@@ -104,8 +99,9 @@ RSpec.describe Pdfinfo do
         expect(pdfinfo.title).to eq('Pdfinfo Title')
       end
     end
+
     context 'when title is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Title', '') }
+      modify_pdfinfo_response {|res| res.set('Title', nil) }
       it 'returns nil' do
         expect(pdfinfo.title).to be_nil
       end
@@ -113,139 +109,139 @@ RSpec.describe Pdfinfo do
   end
 
   describe '#subject' do
+    subject { pdfinfo.subject }
     context 'when given a subject' do
-      it 'returns the subject' do
-        expect(pdfinfo.subject).to eq('Pdfinfo Subject')
-      end
+      it { is_expected.to eq('Pdfinfo Subject') }
     end
     context 'when subject value is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Subject', '') }
-      it 'returns nil' do
-        expect(pdfinfo.subject).to be_nil
-      end
+      modify_pdfinfo_response {|res| res.set('Subject', nil) }
+      it { is_expected.to be_nil }
     end
     context 'when subject key is not present' do
-      let(:mock_response) { response_without_key(unencrypted_response, 'Subject') }
-      it 'returns nil' do
-        expect(pdfinfo.subject).to be_nil
-      end
+      modify_pdfinfo_response {|res| res.delete('Subject') }
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#keywords' do
+    subject { pdfinfo.keywords }
     context 'when given keywords' do
-      it 'returns the keywords' do
-        expect(pdfinfo.keywords).to eq(%w(Keyword1 Keyword2))
-      end
+      it { is_expected.to eq(%w(Keyword1 Keyword2)) }
     end
     context 'when keywords value is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Keywords', '') }
-      it 'returns an empty array' do
-        expect(pdfinfo.keywords).to eq([])
-      end
+      modify_pdfinfo_response {|res| res.set('Keywords', '') }
+      it { is_expected.to eq([]) }
     end
     context 'when keywords key is not present' do
-      let(:mock_response) { unencrypted_response.sub(/^Keywords.*\n/, '') }
-      it 'returns an empty array' do
-        expect(pdfinfo.keywords).to eq([])
-      end
+      modify_pdfinfo_response {|res| res.delete('Keywords') }
+      it { is_expected.to eq([]) }
     end
   end
 
   describe '#author' do
+    subject { pdfinfo.author }
     context 'when given an author' do
-      it 'returns the author' do
-        expect(pdfinfo.author).to eq('Pdfinfo Author')
-      end
+      it { is_expected.to eq('Pdfinfo Author') }
     end
     context 'when author is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Author', '') }
-      it 'returns nil' do
-        expect(pdfinfo.author).to be_nil
-      end
+      modify_pdfinfo_response {|res| res.set('Author', '') }
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#creation_date' do
+    subject { pdfinfo.creation_date }
+
     context 'when given an author' do
-      it 'returns a time object' do
-        expect(pdfinfo.creation_date).to be_an_instance_of(Time)
-      end
+      it { is_expected.to be_an_instance_of(Time) }
       it 'returns the time correctly parsed' do
-        expect(pdfinfo.creation_date).to eq(Time.parse('2014-10-26 18:23:25').utc)
+        expect(pdfinfo.creation_date).to eq(Time.parse('2014-10-27 01:23:25'))
       end
     end
+
     context 'when creation date value is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'CreationDate', '') }
-      it 'returns nil' do
-        expect(pdfinfo.creation_date).to be_nil
-      end
+      modify_pdfinfo_response {|res| res.set('CreationDate', '') }
+      it { is_expected.to be_nil }
     end
+
     context 'when creation date key is not present' do
-      let(:mock_response) { unencrypted_response.sub(/^CreationDate.*\n/, '') }
-      it 'returns nil' do
-        expect(pdfinfo.creation_date).to be_nil
-      end
+      modify_pdfinfo_response {|res| res.delete('CreationDate') }
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#creator' do
+    subject { pdfinfo.creator }
     context 'when given a creator' do
-      it { expect(pdfinfo.creator).to eq('Pdfinfo Creator') }
+      it { is_expected.to eq('Pdfinfo Creator') }
     end
-    context 'when creator is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Creator', '') }
-      it { expect(pdfinfo.creator).to be_nil }
+
+    context 'when creator value is not present' do
+      modify_pdfinfo_response {|res| res.set('Creator', '') }
+      it { is_expected.to be_nil }
+    end
+    context 'when creator key is not present' do
+      modify_pdfinfo_response {|res| res.delete('Creator') }
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#producer' do
+    subject { pdfinfo.producer }
     context 'when given a creator' do
-      it { expect(pdfinfo.producer).to eq('Pdfinfo Producer') }
+      it { is_expected.to eq('Pdfinfo Producer') }
     end
     context 'when creator is not present' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Producer', '') }
-      it { expect(pdfinfo.producer).to be_nil }
+      modify_pdfinfo_response {|res| res.set('Producer', '') }
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#tagged?' do
+    subject { pdfinfo.tagged? }
     context 'when tagged' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Tagged', 'yes') }
-      it { expect(pdfinfo.tagged?).to eq(true) }
+      modify_pdfinfo_response {|res| res.set('Tagged', 'yes') }
+      it { is_expected.to eq(true) }
     end
     context 'when not tagged' do
-      let(:mock_response) { modified_response(unencrypted_response, 'Tagged', 'no') }
+      modify_pdfinfo_response {|res| res.set('Tagged', 'no') }
+      it { is_expected.to eq(false) }
       it { expect(pdfinfo.tagged?).to eq(false) }
     end
   end
 
   describe '#form' do
-    it { expect(pdfinfo.form).to eq('none') }
+    subject { pdfinfo.form }
+    it { is_expected.to eq('none') }
   end
 
   describe '#page_count' do
-    it 'returns a fixnum value of the number of pages' do
-      expect(pdfinfo.page_count).to eq(5)
-    end
+    subject { pdfinfo.page_count }
+    it { is_expected.to eq(5) }
   end
 
   describe '#encrypted?' do
+    subject { pdfinfo.encrypted? }
+
     context 'given encrypted pdf' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.encrypted?).to eq(true) }
+      use_encrypted!
+      it { is_expected.to eq(true) }
     end
+
     context 'given unencrypted pdf' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.encrypted?).to eq(false) }
+      use_unencrypted!
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#usage_rights' do
+    subject { pdfinfo.usage_rights }
+
     context 'given encrypted pdf (all flags off)' do
-      let(:mock_response) { encrypted_response }
+      use_encrypted!
+
       it 'returns a permissions hash' do
-        expect(pdfinfo.usage_rights).to eq({
+        is_expected.to eq({
           print: false,
           copy: false,
           change: false,
@@ -253,10 +249,12 @@ RSpec.describe Pdfinfo do
         })
       end
     end
+
     context 'given unencrypted pdf' do
-      let(:mock_response) { unencrypted_response }
+      use_unencrypted!
+
       it 'returns a permissions hash' do
-        expect(pdfinfo.usage_rights).to eq({
+        is_expected.to eq({
           print: true,
           copy: true,
           change: true,
@@ -267,66 +265,82 @@ RSpec.describe Pdfinfo do
   end
 
   describe '#printable?' do
+    subject { pdfinfo.printable? }
+
     context 'given a pdf that is printable' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.printable?).to eq(true) }
+      use_encrypted!
+      modify_pdfinfo_response {|res| res.set('Encrypted', 'yes (print:yes copy:no change:no addNotes:no)') }
+      it { is_expected.to eq(true) }
     end
     context 'given a pdf that is not printable' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.printable?).to eq(false) }
+      use_encrypted!
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#copyable?' do
+    subject { pdfinfo.copyable? }
+
     context 'given a pdf that is copyable' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.copyable?).to eq(true) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, copy: true) }
+      it { is_expected.to eq(true) }
     end
     context 'given a pdf that is not copyable' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.copyable?).to eq(false) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, copy: false) }
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#changeable?' do
+    use_encrypted!
+
+    subject { pdfinfo.changeable? }
+
     context 'given a pdf that is changeable' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.changeable?).to eq(true) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, change: true) }
+      it { is_expected.to eq(true) }
     end
+
     context 'given a pdf that is not changeable' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.changeable?).to eq(false) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, change: false) }
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#modifiable? (alias to changeable?)' do
+    subject { pdfinfo.modifiable? }
+
     context 'given a pdf that is changeable' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.modifiable?).to eq(true) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, change: true) }
+      it { is_expected.to eq(true) }
     end
+
     context 'given a pdf that is not changeable' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.modifiable?).to eq(false) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, change: false)}
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#annotatable?' do
+    subject { pdfinfo.annotatable? }
     context 'given a pdf that is annotatable' do
-      let(:mock_response) { unencrypted_response }
-      it { expect(pdfinfo.annotatable?).to eq(true) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, addNotes: true)}
+      it { is_expected.to eq(true) }
     end
     context 'given a pdf that is not annotatable' do
-      let(:mock_response) { encrypted_response }
-      it { expect(pdfinfo.annotatable?).to eq(false) }
+      modify_pdfinfo_response {|res| res.set_encryption(true, addNotes: false)}
+      it { is_expected.to eq(false) }
     end
   end
 
   describe '#width' do
-    it { expect(pdfinfo.width).to eq(595.28) }
+    subject { pdfinfo.width }
+    it { is_expected.to eq(595.28) }
   end
 
   describe '#height' do
-    it { expect(pdfinfo.height).to eq(841.89) }
+    subject { pdfinfo.height }
+    it { is_expected.to eq(841.89) }
   end
 
   describe '#size' do
@@ -356,7 +370,7 @@ RSpec.describe Pdfinfo do
         form: "none",
         pdf_version: "1.3",
         keywords: ["Keyword1", "Keyword2"],
-        creation_date: Time.parse('2014-10-26 18:23:25').utc,
+        creation_date: Time.parse('2014-10-27 01:23:25'),
         usage_rights: {
           print: true,
           copy: true,
@@ -370,10 +384,18 @@ RSpec.describe Pdfinfo do
   end
 
   describe '#parse_time' do
-    context 'when given an invalid time format' do
-      it 'returns nil' do
-        expect(pdfinfo.send(:parse_time, "ten o'clock")).to be_nil
+    subject { pdfinfo.send(:parse_time, time) }
+
+    context 'when given a valid time format' do
+      let(:time) { Time.now.to_s }
+      it 'returns a Time object' do
+        is_expected.to be_an_instance_of(Time)
       end
+    end
+
+    context 'when given an invalid time format' do
+      let(:time) { "ten o'clock" }
+      it { is_expected.to be_nil }
     end
   end
 end
