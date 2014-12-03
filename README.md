@@ -40,7 +40,8 @@ pdfinfo.keywords      #=> ["Keyword1", "Keyword2"] # or nil
 pdfinfo.author        #=> "Author Name" # or nil
 pdfinfo.creator       #=> "Creator Name" # or nil
 pdfinfo.producer      #=> "Producer Name" # or nil
-ddfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # Time object
+ddfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
+ddfinfo.modified_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
 pdfinfo.form          #=> "none" # (AcroForm / XFA / none)
 pdfinfo.page_count    #=> 3
 pdfinfo.width         #=> 612
@@ -72,9 +73,21 @@ Pdfinfo.pdfinfo_command = '/another/bin/path/pdfinfo'
 Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
 ```
 
+If you have an .xpdfrc file, you can set it globally or one-off with 'config_path'.  With the pdfinfo command, Its main use will likely be to set text encoding and unicode mapping.
+
+```ruby
+# set xpdfrc path globally
+Pdfinfo.config_path = 'path/to/.xpdfrc'
+# or one-off
+Pdfinfo.new('path/to/file.pdf', config_path: 'path/to/.xpdfrc')
+```
+
 ## Recent Changes
-#### v1.2.1
+#### v1.2.1 (Not yet released)
 * Pdfinfo.exec is now a private instance method
+* \#modified_date added to parse ModDate
+* use can now configure use of .xpdfrc config file
+ 
 #### v1.2.0
 * add #to_hash method which will output the parsed data as a hash.
 * rescue from Time.parse on invalid string format
