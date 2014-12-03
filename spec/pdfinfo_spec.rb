@@ -41,32 +41,33 @@ RSpec.describe Pdfinfo do
   end
 
   describe '#exec' do
+    let(:mock_response) { [fixture_path('shell_responses/unencrypted.txt').read, nil] }
     let(:expected_command) { "pdfinfo -enc UTF-8 #{mock_file_path}" }
 
-    before do |ex|
-      unless ex.metadata[:skip_command_mock]
-        expect(Open3).to receive(:capture2).
-          with(expected_command).
-          and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
-      end
+    def expect_command_to_run(cmd)
+      expect(Open3).to receive(:capture2).
+        with(cmd).
+        and_return(mock_response)
     end
 
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
+        expect_command_to_run("pdfinfo -enc UTF-8 #{mock_file_path}")
+        # expect(Open3).to receive(:capture2).with(expected_command).and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
         Pdfinfo.new(mock_file_path)
       end
     end
 
     context 'passing in :user_password' do
-      let(:expected_command) { 'pdfinfo -enc UTF-8 -upw foo path/to/file.pdf' }
       it 'runs the pdfinfo command passing the user password flag' do
+        expect_command_to_run("pdfinfo -enc UTF-8 -upw foo #{mock_file_path}")
         Pdfinfo.new(mock_file_path, user_password: 'foo')
       end
     end
 
     context 'passing in :owner_password' do
-      let(:expected_command) { "pdfinfo -enc UTF-8 -opw bar path/to/file.pdf" }
       it 'runs the pdfinfo command passing the user password flag' do
+        expect_command_to_run("pdfinfo -enc UTF-8 -opw bar #{mock_file_path}")
         Pdfinfo.new(mock_file_path, owner_password: 'bar')
       end
     end
@@ -74,20 +75,37 @@ RSpec.describe Pdfinfo do
     context 'when passed a path with spaces' do
       let(:expected_command) { "pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
       it 'should escape the file path' do
+        expect_command_to_run("pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
         Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
 
     context 'when given a file with invalid UTF-8 metadata' do
-      it 'should parse correctly', :skip_command_mock do
+      it 'should parse correctly' do
         expect { Pdfinfo.new(fixture_path('pdfs/invalid-utf8.pdf')) }.not_to raise_exception
       end
     end
 
     context 'when the pdfinfo command cant be found' do
-      it 'raises an appropriate exception', :skip_command_mock do
+      it 'raises an appropriate exception' do
         expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
         expect { Pdfinfo.new(mock_file_path) }.to raise_error(Pdfinfo::CommandNotFound)
+      end
+    end
+
+    context 'when Pdfinfo.config_path is present' do
+      it 'runs the command passing the config flag' do
+        expect_command_to_run("pdfinfo -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        Pdfinfo.config_path = "path/to/.xpdfrc"
+        Pdfinfo.new(mock_file_path)
+        Pdfinfo.config_path = nil
+      end
+    end
+
+    context 'when passed :config_path' do
+      it 'runs the command passing the config flag' do
+        expect_command_to_run("pdfinfo -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        Pdfinfo.new(mock_file_path, config_path: "path/to/.xpdfrc")
       end
     end
   end

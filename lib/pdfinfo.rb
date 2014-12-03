@@ -9,16 +9,20 @@ class Pdfinfo
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
 
-  def self.pdfinfo_command
-    @pdfinfo_command || 'pdfinfo'
-  end
+  class << self
+    def pdfinfo_command
+      @pdfinfo_command || 'pdfinfo'
+    end
 
-  def self.pdfinfo_command=(cmd)
-    @pdfinfo_command = cmd
-  end
+    def pdfinfo_command=(cmd)
+      @pdfinfo_command = cmd
+    end
 
-  def self.pdfinfo_command?
-    system("type #{pdfinfo_command} >/dev/null 2>&1")
+    def pdfinfo_command?
+      system("type #{pdfinfo_command} >/dev/null 2>&1")
+    end
+
+    attr_accessor :config_path
   end
 
   def initialize(source_path, opts = {})
@@ -104,6 +108,8 @@ class Pdfinfo
     flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
     flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
+    xpdfrc_path = opts[:config_path] || self.class.config_path
+    flags.concat(['-cfg', xpdfrc_path]) if xpdfrc_path
     flags
   end
 
