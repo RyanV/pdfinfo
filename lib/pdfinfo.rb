@@ -116,8 +116,8 @@ class Pdfinfo
   # @param [String] str
   # @return [String] UTF-8 encoded string
   def force_utf8_encoding(str)
-    str = str.encode('UTF-16', invalid: :replace, undef: :replace, replace: '')
-    str.encode!('UTF-8')
+    str = str.encode(Encoding::UTF_16, invalid: :replace, undef: :replace, replace: '')
+    str.encode!(Encoding::UTF_8)
   end
 
   def presence(val)
