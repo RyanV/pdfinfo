@@ -40,39 +40,41 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe '.exec' do
+  describe '#exec' do
     let(:expected_command) { "pdfinfo -enc UTF-8 #{mock_file_path}" }
 
     before do |ex|
       unless ex.metadata[:skip_command_mock]
-        expect(Open3).to receive(:capture2).with(expected_command).and_return(['', nil])
+        expect(Open3).to receive(:capture2).
+          with(expected_command).
+          and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
       end
     end
 
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        Pdfinfo.exec(mock_file_path)
+        Pdfinfo.new(mock_file_path)
       end
     end
 
     context 'passing in :user_password' do
       let(:expected_command) { 'pdfinfo -enc UTF-8 -upw foo path/to/file.pdf' }
       it 'runs the pdfinfo command passing the user password flag' do
-        Pdfinfo.exec(mock_file_path, user_password: 'foo')
+        Pdfinfo.new(mock_file_path, user_password: 'foo')
       end
     end
 
     context 'passing in :owner_password' do
       let(:expected_command) { "pdfinfo -enc UTF-8 -opw bar path/to/file.pdf" }
       it 'runs the pdfinfo command passing the user password flag' do
-        Pdfinfo.exec(mock_file_path, owner_password: 'bar')
+        Pdfinfo.new(mock_file_path, owner_password: 'bar')
       end
     end
 
     context 'when passed a path with spaces' do
       let(:expected_command) { "pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
       it 'should escape the file path' do
-        Pdfinfo.exec("path/to/file with spaces.pdf")
+        Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
 
@@ -81,14 +83,14 @@ RSpec.describe Pdfinfo do
       # modify_pdfinfo_response {|res| res.set('Title', "\xFE\xFF") }
 
       it 'should parse correctly', :skip_command_mock do
-        expect { Pdfinfo.exec(fixture_path('pdfs/invalid-utf8.pdf')) }.not_to raise_exception
+        expect { Pdfinfo.new(fixture_path('pdfs/invalid-utf8.pdf')) }.not_to raise_exception
       end
     end
 
     context 'when the pdfinfo command cant be found' do
       it 'raises an appropriate exception', :skip_command_mock do
         expect(Pdfinfo).to receive(:pdfinfo_command?) { false }
-        expect { Pdfinfo.exec(mock_file_path) }.to raise_error(Pdfinfo::CommandNotFound)
+        expect { Pdfinfo.new(mock_file_path) }.to raise_error(Pdfinfo::CommandNotFound)
       end
     end
   end

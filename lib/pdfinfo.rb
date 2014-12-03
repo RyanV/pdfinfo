@@ -30,18 +30,6 @@ class Pdfinfo
     :file_size,
     :pdf_version
 
-  def self.exec(file_path, opts = {})
-    raise CommandNotFound, 'pdfinfo' unless pdfinfo_command?
-    flags = []
-    flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
-    flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
-    flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
-
-    command = Shellwords.join([pdfinfo_command, *flags, file_path.to_s])
-    stdout, status = Open3.capture2(command)
-    stdout.encode('UTF-8', invalid: :replace, replace: '', undef: :replace)
-  end
-
   def self.pdfinfo_command
     @pdfinfo_command || 'pdfinfo'
   end
@@ -55,7 +43,7 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-    info_hash = parse_shell_response(Pdfinfo.exec(source_path, opts))
+    info_hash = parse_shell_response(exec(source_path, opts))
 
     @title          = presence(info_hash['Title'])
     @subject        = presence(info_hash['Subject'])
@@ -105,9 +93,48 @@ class Pdfinfo
   def to_hash
     instance_variables.inject({}) {|h, var| h[var[1..-1].to_sym] = instance_variable_get(var); h }
   end
+
   private
+  # executes pdfinfo command with supplied options
+  # @param [String,Pathname] file_path
+  # @param [Hash] opts
+  # @return [String] output
+  def exec(file_path, opts = {})
+    raise CommandNotFound, 'pdfinfo' unless self.class.pdfinfo_command?
+    flags = build_options(opts)
+
+    command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
+
+    stdout, status = Open3.capture2(command)
+    force_utf8_encoding(stdout)
+  end
+
+  # prepares array of flags to pass as command line options
+  # ---
+  # @todo: add option builder class
+  # +++
+  # @param [Hash] opts of options
+  # @option opts [String] :encoding ('UTF-8')
+  # @option opts [String] :owner_password
+  # @option opts [String] :user_password
+  # @return [Array<String>] array of flags
+  def build_options(opts = {})
+    flags = []
+    flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
+    flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
+    flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
+    flags
+  end
+
+  # @param [String] str
+  # @return [String] UTF-8 encoded string
+  def force_utf8_encoding(str)
+    str = str.encode('UTF-16', invalid: :replace, undef: :replace, replace: '')
+    str.encode!('UTF-8')
+  end
+
   def presence(val)
-    (val.nil? || val.empty?) ? nil : val
+    (val.nil? || val.empty? ) ? nil : val
   end
 
   def parse_shell_response(response_str)

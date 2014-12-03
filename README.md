@@ -72,6 +72,8 @@ Pdfinfo.pdfinfo_command #=> '/another/bin/path/pdfinfo'
 ```
 
 ## Recent Changes
+#### v1.2.1
+* Pdfinfo.exec is now a private instance method
 #### v1.2.0
 * add #to_hash method which will output the parsed data as a hash.
 * rescue from Time.parse on invalid string format
