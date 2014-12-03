@@ -79,9 +79,6 @@ RSpec.describe Pdfinfo do
     end
 
     context 'when given a file with invalid UTF-8 metadata' do
-      # let(:pdf_file) { fixture_path('pdfs/invalid-utf8.pdf')}
-      # modify_pdfinfo_response {|res| res.set('Title', "\xFE\xFF") }
-
       it 'should parse correctly', :skip_command_mock do
         expect { Pdfinfo.new(fixture_path('pdfs/invalid-utf8.pdf')) }.not_to raise_exception
       end
@@ -155,9 +152,9 @@ RSpec.describe Pdfinfo do
     subject { pdfinfo.creation_date }
 
     context 'when given an author' do
-      it { is_expected.to be_an_instance_of(Time) }
+      it { is_expected.to be_an_instance_of(DateTime) }
       it 'returns the time correctly parsed' do
-        expect(pdfinfo.creation_date).to eq(Time.parse('2014-10-27 01:23:25'))
+        expect(pdfinfo.creation_date).to eq(DateTime.parse('2014-10-27 01:23:25'))
       end
     end
 
@@ -169,6 +166,17 @@ RSpec.describe Pdfinfo do
     context 'when creation date key is not present' do
       modify_pdfinfo_response {|res| res.delete('CreationDate') }
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe 'modified_date' do
+    let(:pdf_path) { fixture_path('pdfs/test.pdf') }
+    subject { pdfinfo.modified_date }
+    context 'when given a ModDate' do
+      it { is_expected.to be_an_instance_of(DateTime) }
+      it 'returns the time correctly parsed' do
+        expect(pdfinfo.modified_date).to eq(Time.parse("2013-05-08 15:15:28 UTC").to_datetime)
+      end
     end
   end
 
@@ -372,7 +380,8 @@ RSpec.describe Pdfinfo do
         form: "none",
         pdf_version: "1.3",
         keywords: ["Keyword1", "Keyword2"],
-        creation_date: Time.parse('2014-10-27 01:23:25'),
+        creation_date: DateTime.parse('2014-10-27 01:23:25'),
+        modified_date: nil,
         usage_rights: {
           print: true,
           copy: true,
@@ -389,9 +398,9 @@ RSpec.describe Pdfinfo do
     subject { pdfinfo.send(:parse_time, time) }
 
     context 'when given a valid time format' do
-      let(:time) { Time.now.to_s }
+      let(:time) { "Wed May  8 15:15:28 2013" }
       it 'returns a Time object' do
-        is_expected.to be_an_instance_of(Time)
+        is_expected.to be_an_instance_of(DateTime)
       end
     end
 

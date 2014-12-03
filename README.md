@@ -31,7 +31,8 @@ Or install it yourself as:
 
 
 ```ruby
-pdfinfo = Pdfinfo.new("path/to/file.pdf")
+require 'pdfinfo'
+pdfinfo = Pdfinfo.new('path/to/file.pdf')
 
 pdfinfo.title         #=> "Title" # or nil
 pdfinfo.subject       #=> "Subject" # or nil
@@ -40,14 +41,14 @@ pdfinfo.author        #=> "Author Name" # or nil
 pdfinfo.creator       #=> "Creator Name" # or nil
 pdfinfo.producer      #=> "Producer Name" # or nil
 ddfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # Time object
-pdfinfo.form          #=> "none"
+pdfinfo.form          #=> "none" # (AcroForm / XFA / none)
 pdfinfo.page_count    #=> 3
 pdfinfo.width         #=> 612
 pdfinfo.height        #=> 792
 pdfinfo.size          #=> 1521 # file size in bytes
 pdfinfo.pdf_version   #=> "1.3"
 pdfinfo.encrypted?    #=> false # or true
-pdfinfo.usage_rights  #=> {print: true, copy: true, change: true, add_notes: true}
+pdfinfo.usage_rights  #=> {print: true, copy: true, change: true, add_notes: true} # always returns
 pdfinfo.printable?    #=> true  # or false
 pdfinfo.copyable?     #=> true  # or false
 pdfinfo.changeable?   #=> true  # or false

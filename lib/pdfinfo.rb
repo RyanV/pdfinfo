@@ -1,6 +1,5 @@
 require 'open3'
 require 'shellwords'
-require 'time'
 
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
@@ -14,21 +13,9 @@ class Pdfinfo
     end
   end
 
-
-  attr_reader :title,
-    :subject,
-    :keywords,
-    :author,
-    :creator,
-    :creation_date,
-    :usage_rights,
-    :producer,
-    :form,
-    :page_count,
-    :width,
-    :height,
-    :file_size,
-    :pdf_version
+  attr_reader :title, :subject, :keywords, :author, :creator,
+    :creation_date, :modified_date, :usage_rights, :producer,
+    :form, :page_count, :width, :height, :file_size, :pdf_version
 
   def self.pdfinfo_command
     @pdfinfo_command || 'pdfinfo'
@@ -59,6 +46,7 @@ class Pdfinfo
 
     @keywords       = (info_hash['Keywords'] || '').split(/\s/)
     @creation_date  = parse_time(info_hash['CreationDate'])
+    @modified_date  = parse_time(info_hash['ModDate'])
 
     raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
     booleanize_usage_right = lambda {|val| !(raw_usage_rights[val] == 'no') }
@@ -100,7 +88,7 @@ class Pdfinfo
   # @param [Hash] opts
   # @return [String] output
   def exec(file_path, opts = {})
-    raise CommandNotFound, 'pdfinfo' unless self.class.pdfinfo_command?
+    raise CommandNotFound, self.class.pdfinfo_command unless self.class.pdfinfo_command?
     flags = build_options(opts)
 
     command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
@@ -147,7 +135,8 @@ class Pdfinfo
   end
 
   def parse_time(str)
-    presence(str) ? Time.parse(str) : nil
+    return nil unless presence(str)
+    DateTime.strptime(str, '%a %b %e %H:%M:%S %Y')
   rescue ArgumentError => e
     nil
   end
