@@ -1,17 +1,9 @@
 require 'open3'
 require 'shellwords'
+require 'pdfinfo/errors'
 
 class Pdfinfo
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
-
-  class PdfinfoError < ::StandardError
-  end
-
-  class CommandNotFound < PdfinfoError
-    def initialize(command)
-      super("Command Not Found - '#{command}'")
-    end
-  end
 
   attr_reader :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
@@ -136,7 +128,7 @@ class Pdfinfo
   end
 
   def parse_time(str)
-    return nil unless presence(str)
+    return unless presence(str)
     DateTime.strptime(str, '%a %b %e %H:%M:%S %Y')
   rescue ArgumentError => e
     nil
