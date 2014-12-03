@@ -1,8 +1,11 @@
 require 'open3'
 require 'shellwords'
-require 'pdfinfo/errors'
+require File.expand_path('../pdfinfo/object_to_hash', __FILE__)
+require File.expand_path('../pdfinfo/errors', __FILE__)
+require File.expand_path('../pdfinfo/page', __FILE__)
 
 class Pdfinfo
+  include ObjectToHash
   DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
 
   attr_reader :title, :subject, :keywords, :author, :creator,
@@ -72,10 +75,6 @@ class Pdfinfo
 
   def annotatable?
     @usage_rights[:add_notes]
-  end
-
-  def to_hash
-    instance_variables.inject({}) {|h, var| h[var[1..-1].to_sym] = instance_variable_get(var); h }
   end
 
   private

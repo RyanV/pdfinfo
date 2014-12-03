@@ -187,7 +187,7 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe 'modified_date' do
+  describe '#modified_date' do
     let(:pdf_path) { fixture_path('pdfs/test.pdf') }
     subject { pdfinfo.modified_date }
     context 'when given a ModDate' do
