@@ -105,7 +105,7 @@ class Pdfinfo
   # @return [Array<String>] array of flags
   def build_options(opts = {})
     flags = []
-    flags.concat(['-enc', opts.fetch(:encoding, 'UTF-8')])
+    flags.concat(['-enc', opts.fetch(:encoding, Encoding::UTF_8.to_s)])
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
     flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
     xpdfrc_path = opts[:config_path] || self.class.config_path
@@ -116,6 +116,7 @@ class Pdfinfo
   # @param [String] str
   # @return [String] UTF-8 encoded string
   def force_utf8_encoding(str)
+    return str if str.valid_encoding?
     str = str.encode(Encoding::UTF_16, invalid: :replace, undef: :replace, replace: '')
     str.encode!(Encoding::UTF_8)
   end
