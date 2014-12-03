@@ -88,7 +88,8 @@ class Pdfinfo
   # @param [Hash] opts
   # @return [String] output
   def exec(file_path, opts = {})
-    raise CommandNotFound, self.class.pdfinfo_command unless self.class.pdfinfo_command?
+    validate_pdfinfo_command!
+
     flags = build_options(opts)
 
     command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
@@ -139,5 +140,11 @@ class Pdfinfo
     DateTime.strptime(str, '%a %b %e %H:%M:%S %Y')
   rescue ArgumentError => e
     nil
+  end
+
+  def validate_pdfinfo_command!
+    unless self.class.pdfinfo_command?
+      raise CommandNotFound, self.class.pdfinfo_command
+    end
   end
 end
