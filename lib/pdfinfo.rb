@@ -1,8 +1,8 @@
 require 'open3'
 require 'shellwords'
-require File.expand_path('../pdfinfo/object_to_hash', __FILE__)
-require File.expand_path('../pdfinfo/errors', __FILE__)
-require File.expand_path('../pdfinfo/page', __FILE__)
+require 'date'
+require 'time'
+%w(object_to_hash errors page).each {|f| require File.expand_path("../pdfinfo/#{f}", __FILE__)}
 
 class Pdfinfo
   include ObjectToHash

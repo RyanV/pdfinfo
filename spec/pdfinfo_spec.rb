@@ -383,9 +383,9 @@ RSpec.describe Pdfinfo do
     end
   end
 
-  describe '#as_json' do
-    it 'returns a hash of the metadata' do
-      expect(pdfinfo.to_hash).to eq({
+  describe "converting object to hash" do
+    let(:expected_hash) do
+      {
         title: "Pdfinfo Title",
         subject: "Pdfinfo Subject",
         author: "Pdfinfo Author",
@@ -408,7 +408,16 @@ RSpec.describe Pdfinfo do
         },
         width: 595.28,
         height: 841.89
-          })
+      }
+    end
+    it '#as_json returns a hash of the metadata' do
+      expect(pdfinfo.as_json).to eq(expected_hash)
+    end
+    it '#to_hash returns a hash of the metadata' do
+      expect(pdfinfo.to_hash).to eq(expected_hash)
+    end
+    it '#to_h returns a hash of the metadata' do
+      expect(pdfinfo.to_hash).to eq(expected_hash)
     end
   end
 
