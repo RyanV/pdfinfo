@@ -1,16 +1,15 @@
 class Pdfinfo
   class Page
     include ObjectToHash
-    MATCHER = /(?<=\s)(\d+(?:\.\d+)?)(?=\s)/
+    MATCHER = /(?<=\s)?(\d+(?:\.\d+)?)(?=\s)/
 
-    attr_reader :page_number, :width, :height, :rotation
+    attr_reader :width, :height, :rotation
 
     def self.from_string(string)
       new *string.scan(MATCHER).flatten
     end
 
-    def initialize(page_number, width, height, rotation)
-      @page_number = page_number.to_i
+    def initialize(width, height, rotation)
       @width       = width.to_f
       @height      = height.to_f
       @rotation    = rotation.to_f

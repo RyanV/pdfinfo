@@ -6,9 +6,8 @@ require 'time'
 
 class Pdfinfo
   include ObjectToHash
-  DIMENSIONS_REGEXP = /([\d\.]+) x ([\d\.]+)/
 
-  attr_reader :title, :subject, :keywords, :author, :creator,
+  attr_reader :pages, :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
 
@@ -29,7 +28,13 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
+    @pages = []
+
     info_hash = parse_shell_response(exec(source_path, opts))
+
+    info_hash.delete_if do |key, value|
+      @pages << Page.from_string(value) if key.match(/Page\s+\d+\ssize/)
+    end
 
     @title          = presence(info_hash['Title'])
     @subject        = presence(info_hash['Subject'])
@@ -57,7 +62,10 @@ class Pdfinfo
       ur[:add_notes] = booleanize_usage_right.call('addNotes')
     end
 
-    @width, @height = extract_page_dimensions(info_hash['Page size'])
+    # temporarily continue setting #width and #height on Pdfinfo object
+    # to maintain legacy behavior
+    @width  = @pages[0].width
+    @height = @pages[0].height
   end
 
   def tagged?
@@ -104,12 +112,17 @@ class Pdfinfo
   # @return [Array<String>] array of flags
   def build_options(opts = {})
     flags = []
-    flags.concat(['-enc', opts.fetch(:encoding, Encoding::UTF_8.to_s)])
+    xpdfrc_path = opts.fetch(:config_path, self.class.config_path)
+
+    # these flag will always be part of the cli options. Values have defaults and can be overridden
+    flags.concat(['-f',   opts.fetch(:first_page, 0)])
+    flags.concat(['-l',   opts.fetch(:last_page, -1)])
+    flags.concat(['-enc', opts.fetch(:encoding, Encoding::UTF_8)])
+    # optional flags.  if no value, the flag wont be added
+    flags.concat(['-cfg', xpdfrc_path])           if xpdfrc_path
     flags.concat(['-opw', opts[:owner_password]]) if opts[:owner_password]
-    flags.concat(['-upw', opts[:user_password]]) if opts[:user_password]
-    xpdfrc_path = opts[:config_path] || self.class.config_path
-    flags.concat(['-cfg', xpdfrc_path]) if xpdfrc_path
-    flags
+    flags.concat(['-upw', opts[:user_password]])  if opts[:user_password]
+    flags.map(&:to_s)
   end
 
   # @param [String] str
@@ -126,11 +139,6 @@ class Pdfinfo
 
   def parse_shell_response(response_str)
     Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
-  end
-
-  def extract_page_dimensions(str)
-    return unless str
-    str.match(DIMENSIONS_REGEXP).captures.map(&:to_f)
   end
 
   def parse_time(str)

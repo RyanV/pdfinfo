@@ -42,7 +42,7 @@ RSpec.describe Pdfinfo do
 
   describe '#exec' do
     let(:mock_response) { [fixture_path('shell_responses/unencrypted.txt').read, nil] }
-    let(:expected_command) { "pdfinfo -enc UTF-8 #{mock_file_path}" }
+    let(:expected_command) { "pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}" }
 
     def expect_command_to_run(cmd)
       expect(Open3).to receive(:capture2).
@@ -52,7 +52,7 @@ RSpec.describe Pdfinfo do
 
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect_command_to_run("pdfinfo -enc UTF-8 #{mock_file_path}")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
         # expect(Open3).to receive(:capture2).with(expected_command).and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
         Pdfinfo.new(mock_file_path)
       end
@@ -60,22 +60,22 @@ RSpec.describe Pdfinfo do
 
     context 'passing in :user_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect_command_to_run("pdfinfo -enc UTF-8 -upw foo #{mock_file_path}")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -upw foo #{mock_file_path}")
         Pdfinfo.new(mock_file_path, user_password: 'foo')
       end
     end
 
     context 'passing in :owner_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect_command_to_run("pdfinfo -enc UTF-8 -opw bar #{mock_file_path}")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -opw bar #{mock_file_path}")
         Pdfinfo.new(mock_file_path, owner_password: 'bar')
       end
     end
 
     context 'when passed a path with spaces' do
-      let(:expected_command) { "pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
+      let(:expected_command) { "pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
       it 'should escape the file path' do
-        expect_command_to_run("pdfinfo -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
         Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
@@ -95,7 +95,7 @@ RSpec.describe Pdfinfo do
 
     context 'when Pdfinfo.config_path is present' do
       it 'runs the command passing the config flag' do
-        expect_command_to_run("pdfinfo -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
         Pdfinfo.config_path = "path/to/.xpdfrc"
         Pdfinfo.new(mock_file_path)
         Pdfinfo.config_path = nil
@@ -104,7 +104,7 @@ RSpec.describe Pdfinfo do
 
     context 'when passed :config_path' do
       it 'runs the command passing the config flag' do
-        expect_command_to_run("pdfinfo -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
         Pdfinfo.new(mock_file_path, config_path: "path/to/.xpdfrc")
       end
     end
@@ -363,12 +363,16 @@ RSpec.describe Pdfinfo do
 
   describe '#width' do
     subject { pdfinfo.width }
-    it { is_expected.to eq(595.28) }
+    it "refers to the first page width" do
+      expect(subject).to eq(595.28)
+    end
   end
 
   describe '#height' do
     subject { pdfinfo.height }
-    it { is_expected.to eq(841.89) }
+    it "refers to the first page height" do
+      expect(subject).to eq(841.89)
+    end
   end
 
   describe '#size' do
@@ -386,6 +390,13 @@ RSpec.describe Pdfinfo do
   describe "converting object to hash" do
     let(:expected_hash) do
       {
+        pages: [
+          {width: 595.28, height: 841.89, rotation: 0},
+          {width: 595.28, height: 841.89, rotation: 0},
+          {width: 595.28, height: 841.89, rotation: 0},
+          {width: 595.28, height: 841.89, rotation: 0},
+          {width: 595.28, height: 841.89, rotation: 0},
+        ],
         title: "Pdfinfo Title",
         subject: "Pdfinfo Subject",
         author: "Pdfinfo Author",
@@ -410,14 +421,20 @@ RSpec.describe Pdfinfo do
         height: 841.89
       }
     end
-    it '#as_json returns a hash of the metadata' do
-      expect(pdfinfo.as_json).to eq(expected_hash)
+
+    %w(as_json to_hash to_h).each do |hash_method|
+      it "##{hash_method} returns a hash of the metadata" do
+        expect(pdfinfo.send(hash_method)).to eq(expected_hash)
+      end
     end
-    it '#to_hash returns a hash of the metadata' do
-      expect(pdfinfo.to_hash).to eq(expected_hash)
-    end
-    it '#to_h returns a hash of the metadata' do
-      expect(pdfinfo.to_hash).to eq(expected_hash)
+  end
+
+  describe "#pages" do
+    subject { pdfinfo.pages }
+    it 'returns an array Pdfinfo::Page' do
+      expect(subject).to be_an(Array)
+      expect(subject.size).to eq(5)
+      expect(subject.all? {|p| p.is_a?(Pdfinfo::Page) }).to eq(true)
     end
   end
 
