@@ -37,23 +37,25 @@ class Pdfinfo
       @pages << Page.from_string(value) if key.match(/Page\s+\d+\ssize/)
     end
 
-    @title          = presence(info_hash['Title'])
-    @subject        = presence(info_hash['Subject'])
-    @author         = presence(info_hash['Author'])
-    @creator        = presence(info_hash['Creator'])
-    @producer       = presence(info_hash['Producer'])
-    @tagged         = !!(info_hash['Tagged'] =~ /yes/)
-    @encrypted      = !!(info_hash['Encrypted'] =~ /yes/)
-    @page_count     = info_hash['Pages'].to_i
-    @file_size      = info_hash['File size'].to_i
-    @form           = info_hash['Form']
-    @pdf_version    = info_hash['PDF version']
+    encrypted_val = info_hash.delete('Encrypted')
 
-    @keywords       = (info_hash['Keywords'] || '').split(/\s/)
-    @creation_date  = parse_time(info_hash['CreationDate'])
-    @modified_date  = parse_time(info_hash['ModDate'])
+    @title          = presence(info_hash.delete('Title'))
+    @subject        = presence(info_hash.delete('Subject'))
+    @author         = presence(info_hash.delete('Author'))
+    @creator        = presence(info_hash.delete('Creator'))
+    @producer       = presence(info_hash.delete('Producer'))
+    @tagged         = !!(info_hash.delete('Tagged') =~ /yes/)
+    @encrypted      = !!(encrypted_val =~ /yes/)
+    @page_count     = info_hash.delete('Pages').to_i
+    @file_size      = info_hash.delete('File size').to_i
+    @form           = info_hash.delete('Form')
+    @pdf_version    = info_hash.delete('PDF version')
+    @optimized      = !!(info_hash.delete('Optimized') =~ /yes/)
+    @keywords       = (info_hash.delete('Keywords') || '').split(/\s/)
+    @creation_date  = parse_time(info_hash.delete('CreationDate'))
+    @modified_date  = parse_time(info_hash.delete('ModDate'))
 
-    raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
+    raw_usage_rights = Hash[encrypted_val.scan(/(\w+):(\w+)/)]
     booleanize_usage_right = lambda {|val| raw_usage_rights[val] != 'no' }
 
     @usage_rights = {}.tap do |ur|
@@ -77,6 +79,11 @@ class Pdfinfo
   # @return [Boolean]
   def encrypted?
     @encrypted
+  end
+
+  # @return [Boolean]
+  def optimized?
+    @optimized
   end
 
   %w(print copy change).each do |ur|

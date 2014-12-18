@@ -391,11 +391,11 @@ RSpec.describe Pdfinfo do
     let(:expected_hash) do
       {
         pages: [
-          {width: 595.28, height: 841.89, rotation: 0},
-          {width: 595.28, height: 841.89, rotation: 0},
-          {width: 595.28, height: 841.89, rotation: 0},
-          {width: 595.28, height: 841.89, rotation: 0},
-          {width: 595.28, height: 841.89, rotation: 0},
+          {width: 595.28, height: 841.89, rotation: 0.0},
+          {width: 595.28, height: 841.89, rotation: 0.0},
+          {width: 595.28, height: 841.89, rotation: 0.0},
+          {width: 595.28, height: 841.89, rotation: 0.0},
+          {width: 595.28, height: 841.89, rotation: 0.0},
         ],
         title: "Pdfinfo Title",
         subject: "Pdfinfo Subject",
@@ -408,6 +408,7 @@ RSpec.describe Pdfinfo do
         file_size: 2867,
         form: "none",
         pdf_version: "1.3",
+        optimized: false,
         keywords: ["Keyword1", "Keyword2"],
         creation_date: DateTime.parse('2014-10-27 01:23:25'),
         modified_date: nil,
@@ -418,7 +419,7 @@ RSpec.describe Pdfinfo do
           add_notes: true
         },
         width: 595.28,
-        height: 841.89
+        height: 841.89,
       }
     end
 
@@ -426,6 +427,18 @@ RSpec.describe Pdfinfo do
       it "##{hash_method} returns a hash of the metadata" do
         expect(pdfinfo.send(hash_method)).to eq(expected_hash)
       end
+    end
+  end
+
+  describe "optimized?" do
+    subject { pdfinfo.optimized? }
+    context "when pdf has been optimized" do
+      modify_pdfinfo_response {|res| res.set('Optimized', 'yes') }
+      it { is_expected.to eq(true) }
+    end
+    context "when pdf has not been optimized" do
+      modify_pdfinfo_response {|res| res.set('Optimized', 'no') }
+      it { is_expected.to eq(false) }
     end
   end
 
