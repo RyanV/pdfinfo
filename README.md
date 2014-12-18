@@ -46,6 +46,7 @@ pdfinfo.form          #=> "none" # (AcroForm / XFA / none)
 pdfinfo.page_count    #=> 3
 pdfinfo.width         #=> 612
 pdfinfo.height        #=> 792
+pdfinfo.pages         #=> [#<Pdfinfo::Page height=100 width=100 rotation=0.0>, ...]
 pdfinfo.size          #=> 1521 # file size in bytes
 pdfinfo.pdf_version   #=> "1.3"
 pdfinfo.encrypted?    #=> false # or true
@@ -56,6 +57,7 @@ pdfinfo.changeable?   #=> true  # or false
 pdfinfo.modifiable?   #=> true  # or false. alias for #changeable?
 pdfinfo.annotatable?  #=> true  # or false
 pdfinfo.tagged?       #=> false # or true
+pdfinfo.optimized?    #=> false # or true
 ```
 For encrypted files with a password you can pass in the user or owner password as options
 
@@ -83,10 +85,12 @@ Pdfinfo.new('path/to/file.pdf', config_path: 'path/to/.xpdfrc')
 ```
 
 ## Recent Changes
-#### v1.2.1 (Not yet released)
+#### v1.3.0 (Not yet released)
 * Pdfinfo.exec is now a private instance method
 * \#modified_date added to parse ModDate
-* use can now configure use of .xpdfrc config file
+* user can now configure use of .xpdfrc config file
+* \#to_hash now uses #to_h, with #to_hash as the fallback
+* Added "Page" functionality/parsing
  
 #### v1.2.0
 * add #to_hash method which will output the parsed data as a hash.
