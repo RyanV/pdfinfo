@@ -20,6 +20,7 @@ class Pdfinfo
       @pdfinfo_command = cmd
     end
 
+    # @return [Boolean]
     def pdfinfo_command?
       system("type #{pdfinfo_command} >/dev/null 2>&1")
     end
@@ -53,7 +54,7 @@ class Pdfinfo
     @modified_date  = parse_time(info_hash['ModDate'])
 
     raw_usage_rights = Hash[info_hash['Encrypted'].scan(/(\w+):(\w+)/)]
-    booleanize_usage_right = lambda {|val| !(raw_usage_rights[val] == 'no') }
+    booleanize_usage_right = lambda {|val| raw_usage_rights[val] != 'no' }
 
     @usage_rights = {}.tap do |ur|
       ur[:print]     = booleanize_usage_right.call('print')
@@ -68,19 +69,23 @@ class Pdfinfo
     @height = @pages[0].height
   end
 
+  # @return [Boolean]
   def tagged?
     @tagged
   end
 
+  # @return [Boolean]
   def encrypted?
     @encrypted
   end
 
   %w(print copy change).each do |ur|
+    # @return [Boolean]
     define_method("#{ur}able?") { @usage_rights[ur.to_sym] }
   end
   alias modifiable? changeable?
 
+  # @return [Boolean]
   def annotatable?
     @usage_rights[:add_notes]
   end
