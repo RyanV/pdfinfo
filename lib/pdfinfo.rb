@@ -11,6 +11,12 @@ class Pdfinfo
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
 
+  class PageCollection < Array
+    def as_json(*_)
+      map {|page| page.as_json }
+    end
+  end
+
   class << self
     def pdfinfo_command
       @pdfinfo_command || 'pdfinfo'
@@ -29,7 +35,7 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-    @pages = []
+    @pages = PageCollection.new
 
     info_hash = parse_shell_response(exec(source_path, opts))
 

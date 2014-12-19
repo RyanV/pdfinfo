@@ -4,8 +4,8 @@ require File.expand_path('../lib/pdfinfo/version', __FILE__)
 Gem::Specification.new do |spec|
   spec.name          = 'pdfinfo'
   spec.version       = Pdfinfo::VERSION
-  spec.summary       = %q{Simple ruby wrapper around the pdfinfo executable}
-  spec.description   = %q{Simple ruby wrapper around the pdfinfo executable}
+  spec.summary       = %q{Simple ruby wrapper around the pdfinfo command line utility}
+  spec.description   = %q{Simple ruby wrapper around the pdfinfo command line utility}
 
   spec.required_ruby_version     = '>= 1.9.3'
 
