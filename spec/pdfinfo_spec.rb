@@ -417,9 +417,7 @@ RSpec.describe Pdfinfo do
           copy: true,
           change: true,
           add_notes: true
-        },
-        width: 595.28,
-        height: 841.89,
+        }
       }
     end
 

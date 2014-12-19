@@ -62,13 +62,11 @@ class Pdfinfo
       ur[:change]    = booleanize_usage_right.call('change')
       ur[:add_notes] = booleanize_usage_right.call('addNotes')
     end
-
-    # temporarily continue setting #width and #height on Pdfinfo object
-    # to maintain legacy behavior
-    @width  = @pages[0].width
-    @height = @pages[0].height
   end
 
+  %w(width height).each do |attr|
+    define_method(attr) { @pages[0].send(attr) }
+  end
   # @return [Boolean]
   %w(tagged encrypted optimized).each do |flag|
     define_method("#{flag}?") { instance_variable_get("@#{flag}")}
