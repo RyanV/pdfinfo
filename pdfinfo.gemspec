@@ -5,7 +5,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'pdfinfo'
   spec.version       = Pdfinfo::VERSION
   spec.summary       = %q{Simple ruby wrapper around the pdfinfo command line utility}
-  spec.description   = %q{Simple ruby wrapper around the pdfinfo command line utility}
+  spec.description   = %q{Object oriented ruby wrapper around the pdfinfo}
 
   spec.required_ruby_version     = '>= 1.9.3'
 
