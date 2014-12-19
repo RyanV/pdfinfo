@@ -1,6 +1,6 @@
 class Pdfinfo
   class Page
-    include ObjectToHash
+    # include ObjectToHash
     MATCHER = /(?<=\s)?(\d+(?:\.\d+)?)(?=\s)/
 
     attr_reader :width, :height, :rotation
@@ -17,6 +17,10 @@ class Pdfinfo
 
     def rotated?
       0 != @rotation
+    end
+
+    def to_hash
+      {width: width, height: height, rotation: rotation}
     end
   end
 end

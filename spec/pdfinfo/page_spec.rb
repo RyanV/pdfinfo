@@ -44,4 +44,10 @@ RSpec.describe Pdfinfo::Page do
       expect(subject.to_hash).to eq({width: 595.28, height: 841.89, rotation: 20.0})
     end
   end
+
+  # describe "#as_json" do
+  #   it "returns the hash with stringified keys" do
+  #
+  #   end
+  # end
 end

@@ -2,20 +2,12 @@ require 'open3'
 require 'shellwords'
 require 'date'
 require 'time'
-%w(object_to_hash errors page).each {|f| require File.expand_path("../pdfinfo/#{f}", __FILE__)}
+%w(errors page).each {|f| require File.expand_path("../pdfinfo/#{f}", __FILE__)}
 
 class Pdfinfo
-  include ObjectToHash
-
   attr_reader :pages, :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
-
-  class PageCollection < Array
-    def as_json(*_)
-      map {|page| page.as_json }
-    end
-  end
 
   class << self
     def pdfinfo_command
@@ -35,7 +27,7 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-    @pages = PageCollection.new
+    @pages = []
 
     info_hash = parse_shell_response(exec(source_path, opts))
 
@@ -102,6 +94,13 @@ class Pdfinfo
   def annotatable?
     @usage_rights[:add_notes]
   end
+
+  def to_hash
+    hash = instance_variables.inject({}) { |h, var| h[var[1..-1].to_sym] = instance_variable_get(var); h }
+    hash[:pages].map!(&:to_hash)
+    hash
+  end
+  alias_method :to_h, :to_hash
 
   private
   # executes pdfinfo command with supplied options

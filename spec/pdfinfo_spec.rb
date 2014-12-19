@@ -423,7 +423,7 @@ RSpec.describe Pdfinfo do
       }
     end
 
-    %w(as_json to_hash to_h).each do |hash_method|
+    %w(to_hash to_h).each do |hash_method|
       it "##{hash_method} returns a hash of the metadata" do
         expect(pdfinfo.send(hash_method)).to eq(expected_hash)
       end
