@@ -1,9 +1,3 @@
-class Array
-  def as_json
-    map {|v| v.respond_to?(:as_json) ? v.as_json : v }
-  end unless method_defined?(:as_json)
-end
-
 class Pdfinfo
   module ObjectToHash
     def as_json
@@ -16,4 +10,10 @@ class Pdfinfo
     alias to_hash as_json
     alias to_h as_json
   end
+end
+
+class Array
+  def as_json
+    map {|v| v.respond_to?(:as_json) ? v.as_json : v }
+  end unless method_defined?(:as_json)
 end

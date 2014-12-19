@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.email         = 'rvenegas2@gmail.com'
   spec.homepage      = 'https://github.com/RyanV/pdfinfo'
 
-  spec.files         = %w(lib/pdfinfo.rb)
+  spec.files         = `git ls-files -- lib/*`.split("\n")
 
   spec.require_paths = %w(lib)
 
