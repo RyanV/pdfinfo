@@ -86,7 +86,7 @@ Pdfinfo.new('path/to/file.pdf', config_path: 'path/to/.xpdfrc')
 
 ## Recent Changes
 
-see the changelog for recent changes
+see the [CHANGELOG](CHANGELOG.md) for recent changes
 
 ## Running specs
 
