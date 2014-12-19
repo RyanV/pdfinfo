@@ -70,18 +70,8 @@ class Pdfinfo
   end
 
   # @return [Boolean]
-  def tagged?
-    @tagged
-  end
-
-  # @return [Boolean]
-  def encrypted?
-    @encrypted
-  end
-
-  # @return [Boolean]
-  def optimized?
-    @optimized
+  %w(tagged encrypted optimized).each do |flag|
+    define_method("#{flag}?") { instance_variable_get("@#{flag}")}
   end
 
   %w(print copy change).each do |ur|
