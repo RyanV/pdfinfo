@@ -40,13 +40,12 @@ pdfinfo.keywords      #=> ["Keyword1", "Keyword2"] # or nil
 pdfinfo.author        #=> "Author Name" # or nil
 pdfinfo.creator       #=> "Creator Name" # or nil
 pdfinfo.producer      #=> "Producer Name" # or nil
-ddfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
-ddfinfo.modified_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
+pdfinfo.creation_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
+pdfinfo.modified_date #=> 2014-10-26 20:50:45 -0700 # DateTime object
 pdfinfo.form          #=> "none" # (AcroForm / XFA / none)
 pdfinfo.page_count    #=> 3
 pdfinfo.width         #=> 612
 pdfinfo.height        #=> 792
-pdfinfo.pages         #=> [#<Pdfinfo::Page height=100 width=100 rotation=0.0>, ...]
 pdfinfo.size          #=> 1521 # file size in bytes
 pdfinfo.pdf_version   #=> "1.3"
 pdfinfo.encrypted?    #=> false # or true
@@ -58,6 +57,13 @@ pdfinfo.modifiable?   #=> true  # or false. alias for #changeable?
 pdfinfo.annotatable?  #=> true  # or false
 pdfinfo.tagged?       #=> false # or true
 pdfinfo.optimized?    #=> false # or true
+
+# Pages
+pdfinfo.pages         #=> [#<Pdfinfo::Page height=100 width=100 rotation=0.0>, ...]
+first_page = pdfinfo.page[0]
+first_page.height     #=> 100
+first_page.width      #=> 100
+first_page.rotation   #=> 0.0
 ```
 For encrypted files with a password you can pass in the user or owner password as options
 
@@ -99,5 +105,6 @@ Then run specs by running
     $ rake
 
 ## TODO
+* add documentation for #to_hash 
 * Error handling
 * type coersion is getting messy in initialize.  refactor.
