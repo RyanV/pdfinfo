@@ -20,9 +20,5 @@ class Pdfinfo
     def rotated?
       0 != @rotation
     end
-
-    # def to_hash
-    #   {width: width, height: height, rotation: rotation}
-    # end
   end
 end
