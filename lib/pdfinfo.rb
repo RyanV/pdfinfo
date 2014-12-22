@@ -2,9 +2,10 @@ require 'open3'
 require 'shellwords'
 require 'date'
 require 'time'
-%w(errors page).each {|f| require File.expand_path("../pdfinfo/#{f}", __FILE__)}
+Dir[File.expand_path("../pdfinfo/*", __FILE__)].each {|f| require f }
 
 class Pdfinfo
+  include ToHash
   attr_reader :pages, :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
@@ -84,9 +85,7 @@ class Pdfinfo
   end
 
   def to_hash
-    hash = instance_variables.inject({}) { |h, var| h[var[1..-1].to_sym] = instance_variable_get(var); h }
-    hash[:pages].map!(&:to_hash)
-    hash
+    super.tap {|h| h[:pages].map!(&:to_hash) }
   end
   alias_method :to_h, :to_hash
 
