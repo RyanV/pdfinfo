@@ -27,10 +27,10 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-    @pages = []
 
     info_hash = parse_shell_response(exec(source_path, opts))
 
+    @pages = []
     info_hash.delete_if do |key, value|
       @pages << Page.from_string(value) if key.match(/Page\s+\d+\ssize/)
     end
@@ -43,12 +43,12 @@ class Pdfinfo
     @creator        = presence(info_hash.delete('Creator'))
     @producer       = presence(info_hash.delete('Producer'))
     @tagged         = !!(info_hash.delete('Tagged') =~ /yes/)
+    @optimized      = !!(info_hash.delete('Optimized') =~ /yes/)
     @encrypted      = !!(encrypted_val =~ /yes/)
     @page_count     = info_hash.delete('Pages').to_i
     @file_size      = info_hash.delete('File size').to_i
     @form           = info_hash.delete('Form')
     @pdf_version    = info_hash.delete('PDF version')
-    @optimized      = !!(info_hash.delete('Optimized') =~ /yes/)
     @keywords       = (info_hash.delete('Keywords') || '').split(/\s/)
     @creation_date  = parse_time(info_hash.delete('CreationDate'))
     @modified_date  = parse_time(info_hash.delete('ModDate'))
@@ -67,18 +67,18 @@ class Pdfinfo
   %w(width height).each do |attr|
     define_method(attr) { @pages[0].send(attr) }
   end
-  # @return [Boolean]
+
+  # Feature checks
   %w(tagged encrypted optimized).each do |flag|
     define_method("#{flag}?") { instance_variable_get("@#{flag}")}
   end
 
+  # Usage rights checks
   %w(print copy change).each do |ur|
-    # @return [Boolean]
     define_method("#{ur}able?") { @usage_rights[ur.to_sym] }
   end
   alias modifiable? changeable?
 
-  # @return [Boolean]
   def annotatable?
     @usage_rights[:add_notes]
   end
@@ -138,8 +138,9 @@ class Pdfinfo
     str.encode!(Encoding::UTF_8)
   end
 
+  # @return [NilClass,String] returns nil if string is empty
   def presence(val)
-    (val.nil? || val.empty? ) ? nil : val
+    (val.nil? || val.empty?) ? nil : val
   end
 
   def parse_shell_response(response_str)
