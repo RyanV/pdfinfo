@@ -1,3 +1,5 @@
+#### v1.4.0
+* raise Pdfinfo::CommandFailed when command returns non-zero exit code
 #### v1.3.4
 * remove #as_json alias. will continue to work when using with rails, which internally calls #to_hash on the object before calling #as_json.
 * height, and width are no longer top level keys when converting object to hash.  Pdfinfo#height and Pdfinfo#width are still available, returning respective dimensions of the first page.

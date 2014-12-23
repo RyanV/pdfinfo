@@ -102,6 +102,7 @@ class Pdfinfo
     command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
 
     stdout, status = Open3.capture2(command)
+    raise CommandFailed.new(command) unless status.success?
     force_utf8_encoding(stdout)
   end
 

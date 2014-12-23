@@ -41,18 +41,17 @@ RSpec.describe Pdfinfo do
   end
 
   describe '#exec' do
-    let(:mock_response) { [fixture_path('shell_responses/unencrypted.txt').read, nil] }
+    let(:mock_status) { instance_double(Process::Status, :success? => true, :exitstatus => 0) }
+    let(:mock_response) { [fixture_path('shell_responses/unencrypted.txt').read, mock_status] }
     let(:expected_command) { "pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}" }
 
-    def expect_command_to_run(cmd)
-      expect(Open3).to receive(:capture2).
-        with(cmd).
-        and_return(mock_response)
+    def expect_command_will_run(cmd)
+      expect(Open3).to receive(:capture2).with(cmd).and_return(mock_response)
     end
 
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
         # expect(Open3).to receive(:capture2).with(expected_command).and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
         Pdfinfo.new(mock_file_path)
       end
@@ -60,22 +59,21 @@ RSpec.describe Pdfinfo do
 
     context 'passing in :user_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -upw foo #{mock_file_path}")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 -upw foo #{mock_file_path}")
         Pdfinfo.new(mock_file_path, user_password: 'foo')
       end
     end
 
     context 'passing in :owner_password' do
       it 'runs the pdfinfo command passing the user password flag' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -opw bar #{mock_file_path}")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 -opw bar #{mock_file_path}")
         Pdfinfo.new(mock_file_path, owner_password: 'bar')
       end
     end
 
     context 'when passed a path with spaces' do
-      let(:expected_command) { "pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf" }
       it 'should escape the file path' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 path/to/file\\ with\\ spaces.pdf")
         Pdfinfo.new("path/to/file with spaces.pdf")
       end
     end
@@ -95,7 +93,7 @@ RSpec.describe Pdfinfo do
 
     context 'when Pdfinfo.config_path is present' do
       it 'runs the command passing the config flag' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
         Pdfinfo.config_path = "path/to/.xpdfrc"
         Pdfinfo.new(mock_file_path)
         Pdfinfo.config_path = nil
@@ -104,8 +102,16 @@ RSpec.describe Pdfinfo do
 
     context 'when passed :config_path' do
       it 'runs the command passing the config flag' do
-        expect_command_to_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 -cfg path/to/.xpdfrc #{mock_file_path}")
         Pdfinfo.new(mock_file_path, config_path: "path/to/.xpdfrc")
+      end
+    end
+
+    context "when command fails" do
+      let(:mock_status) { instance_double(Process::Status, :success? => false, :exitstatus => 1) }
+      it "raises Pdfinfo::CommandFailed" do
+        expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
+        expect { Pdfinfo.new(mock_file_path) }.to raise_error(Pdfinfo::CommandFailed)
       end
     end
   end
