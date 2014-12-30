@@ -144,7 +144,11 @@ class Pdfinfo
   end
 
   def parse_shell_response(response_str)
-    Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
+    response_str.split(/\n/).reduce(Hash.new) do |metadata, line|
+      name, val = line.split(/: +/, 2)
+      metadata[name] = val
+      metadata
+    end
   end
 
   def parse_time(str)
