@@ -11,7 +11,7 @@ class Pdfinfo
       new *string.scan(MATCHER).flatten
     end
 
-    def initialize(width, height, rotation)
+    def initialize(width, height, rotation=0.0)
       @width       = width.to_f
       @height      = height.to_f
       @rotation    = rotation.to_f
