@@ -28,7 +28,6 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-
     info_hash = parse_shell_response(exec(source_path, opts))
 
     @pages = []
@@ -144,7 +143,8 @@ class Pdfinfo
   end
 
   def parse_shell_response(response_str)
-    Hash[response_str.split(/\n/).map {|kv| kv.split(/:/, 2).map(&:strip) }]
+    kv_pairs = response_str.split(/\n+/).map {|line| line.split(/:/, 2).map(&:strip) }
+    Hash[kv_pairs.reject {|ary| ary.empty? }]
   end
 
   def parse_time(str)

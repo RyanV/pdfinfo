@@ -45,14 +45,13 @@ RSpec.describe Pdfinfo do
     let(:mock_response) { [fixture_path('shell_responses/unencrypted.txt').read, mock_status] }
     let(:expected_command) { "pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}" }
 
-    def expect_command_will_run(cmd)
+    def expect_command_will_run(cmd = expected_command)
       expect(Open3).to receive(:capture2).with(cmd).and_return(mock_response)
     end
 
     context 'with no options given' do
       it 'runs the pdfinfo command without flags' do
         expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
-        # expect(Open3).to receive(:capture2).with(expected_command).and_return([fixture_path('shell_responses/unencrypted.txt').read, nil])
         Pdfinfo.new(mock_file_path)
       end
     end
@@ -112,6 +111,15 @@ RSpec.describe Pdfinfo do
       it "raises Pdfinfo::CommandFailed" do
         expect_command_will_run("pdfinfo -f 0 -l -1 -enc UTF-8 #{mock_file_path}")
         expect { Pdfinfo.new(mock_file_path) }.to raise_error(Pdfinfo::CommandFailed)
+      end
+    end
+
+    # This test only will fail when using ruby 2+
+    context "when response contains string with extra new lines" do
+      let(:mock_response) { [fixture_path('shell_responses/extra_new_lines.txt').read, mock_status] }
+      it 'parses correctly' do
+        expect_command_will_run
+        expect { Pdfinfo.new(mock_file_path) }.not_to raise_exception
       end
     end
   end
