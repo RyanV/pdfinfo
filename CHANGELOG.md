@@ -1,3 +1,5 @@
+#### v1.4.1
+* bug fix for ruby 2+ hash creation given response string with multiple successive new line characters. (ArgumentError: invalid number of elements (0 for 1..2))
 #### v1.4.0
 * raise Pdfinfo::CommandFailed when command returns non-zero exit code
 #### v1.3.4
