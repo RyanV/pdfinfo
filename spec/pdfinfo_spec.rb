@@ -122,6 +122,15 @@ RSpec.describe Pdfinfo do
         expect { Pdfinfo.new(mock_file_path) }.not_to raise_exception
       end
     end
+
+    context "when response pages do not contain page rotation" do
+      let(:mock_response) { [fixture_path('shell_responses/separate_line_page_rotation.txt').read, mock_status] }
+
+      it 'parses correctly' do
+        expect_command_will_run
+        expect { Pdfinfo.new(mock_file_path) }.not_to raise_exception
+      end
+    end
   end
 
   describe '#title' do

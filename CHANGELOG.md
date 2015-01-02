@@ -1,3 +1,5 @@
+#### v1.4.2
+* simplified fix for bug where page size line missing rotation information would raise an ArgumentError on Pdfinfo::Page creation
 #### v1.4.1
 * bug fix for ruby 2+ hash creation given response string with multiple successive new line characters. (ArgumentError: invalid number of elements (0 for 1..2))
 #### v1.4.0
