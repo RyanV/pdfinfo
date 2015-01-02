@@ -11,6 +11,10 @@ RSpec.describe Pdfinfo::Page do
       expect(Pdfinfo::Page).to receive(:new).with('595.28', '841.89', '20')
       subject
     end
+
+    it 'returns an instance of Pdfinfo::Page given a string that does not include a rotation' do
+      expect(described_class.from_string("595.28 x 841.89 pts (A4)")).to be_instance_of(Pdfinfo::Page)
+    end
   end
 
   describe '#height' do
