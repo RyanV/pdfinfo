@@ -35,13 +35,4 @@ RSpec.configure do |config|
   require 'support/response_modifier'
   require 'support/rspec_example_group'
   config.extend Pdfinfo::RSpec::ExampleGroup::ClassMethods
-
-  config.before(:each) do |ex|
-    allow(Open3).to receive(:capture2).and_wrap_original do |m, command|
-      response, status = m.call(command)
-      modifier = Pdfinfo::ResponseModifier.new(response)
-      response_modification_handler.call(modifier)
-      [modifier.to_s, status]
-    end
-  end
 end

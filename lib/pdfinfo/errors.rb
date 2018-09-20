@@ -3,6 +3,13 @@ class Pdfinfo
   end
 
   class CommandFailed < PdfinfoError
+    attr_reader :command, :error
+
+    def initialize(command:, error: nil)
+      super(command)
+      @command = command
+      @error = error
+    end
   end
 
   class CommandNotFound < PdfinfoError
