@@ -108,22 +108,15 @@ class Pdfinfo
 
     command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
 
-    stdout, error, status = capture3(*command.shellsplit)
+    output, error, status = capture3(*command.shellsplit)
     raise CommandFailed.new(command: command, error: error) unless status.success?
-    force_utf8_encoding(stdout)
+    force_utf8_encoding(output)
   end
 
-  # reimplementation of Open3.capture3 using posix_spawn
+  # reimplementation of Open3.capture3 using posix-spawn
   def capture3(*cmd, stdin_data: '')
-    pid, stdin, stdout, stderr = popen4(*cmd)
-    stdin.write(stdin_data)
-    stdin.close
-    Process::waitpid(pid)
-    [stdout.read, stderr.read, $?]
-  ensure
-    [stdin, stdout, stderr].each do |io|
-      io.close unless io.closed?
-    end
+    child_process = Child.new(*cmd, input: stdin_data)
+    [child_process.out, child_process.err, child_process.status]
   end
 
   # prepares array of flags to pass as command line options
