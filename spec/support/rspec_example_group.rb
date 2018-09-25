@@ -5,16 +5,24 @@ class Pdfinfo
         def self.extended(host)
           host.class_eval do
             let(:user_password) { nil }
-            let(:response_modification_handler) { Proc.new {} }
             let(:encrypted_pdf_path) { fixture_path('pdfs/encrypted.pdf') }
             let(:unencrypted_pdf_path) { fixture_path('pdfs/unencrypted.pdf') }
 
             let(:pdfinfo) { described_class.new(pdf_path, user_password: user_password) }
+            let(:modified_pdfinfo) do
+              lambda do |&modification_handler|
+                described_class.new(
+                  pdf_path,
+                  user_password: user_password,
+                  response_mapper: lambda do |response|
+                    modifier = Pdfinfo::ResponseModifier.new(response)
+                    modification_handler.call(modifier)
+                    modifier.to_s
+                  end
+                )
+              end
+            end
           end
-        end
-
-        def modify_pdfinfo_response(&handler)
-          let(:response_modification_handler) { handler }
         end
 
         def use_encrypted!

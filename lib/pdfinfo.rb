@@ -1,11 +1,12 @@
-require 'open3'
+require 'posix/spawn'
 require 'shellwords'
 require 'date'
 require 'time'
-Dir[File.expand_path("../pdfinfo/*", __FILE__)].each {|f| require f }
+Dir[File.expand_path("../pdfinfo/*", __FILE__)].each { |f| require f }
 
 class Pdfinfo
   include ToHash
+  include POSIX::Spawn
   attr_reader :pages, :title, :subject, :keywords, :author, :creator,
     :creation_date, :modified_date, :usage_rights, :producer,
     :form, :page_count, :width, :height, :file_size, :pdf_version
@@ -28,7 +29,12 @@ class Pdfinfo
   end
 
   def initialize(source_path, opts = {})
-    info_hash = parse_shell_response(exec(source_path, opts))
+    response_mapper = opts.delete(:response_mapper) || ->(x) { x }
+    info_hash = parse_shell_response(
+      response_mapper.call(
+        exec(source_path, opts)
+      )
+    )
 
     @pages = []
     info_hash.delete_if do |key, value|
@@ -54,7 +60,7 @@ class Pdfinfo
     @modified_date  = parse_time(info_hash.delete('ModDate'))
 
     raw_usage_rights = Hash[encrypted_val.scan(/(\w+):(\w+)/)]
-    booleanize_usage_right = lambda {|val| raw_usage_rights[val] != 'no' }
+    booleanize_usage_right = lambda { |val| raw_usage_rights[val] != 'no' }
 
     @usage_rights = {}.tap do |ur|
       ur[:print]     = booleanize_usage_right.call('print')
@@ -70,7 +76,7 @@ class Pdfinfo
 
   # Feature checks
   %w(tagged encrypted optimized).each do |flag|
-    define_method("#{flag}?") { instance_variable_get("@#{flag}")}
+    define_method("#{flag}?") { instance_variable_get("@#{flag}") }
   end
 
   # Usage rights checks
@@ -84,11 +90,13 @@ class Pdfinfo
   end
 
   def to_hash
-    super.tap {|h| h[:pages].map!(&:to_hash) }
+    super.tap { |h| h[:pages].map!(&:to_hash) }
   end
+
   alias_method :to_h, :to_hash
 
   private
+
   # executes pdfinfo command with supplied options
   # @param [String,Pathname] file_path
   # @param [Hash] opts
@@ -100,9 +108,15 @@ class Pdfinfo
 
     command = [self.class.pdfinfo_command, *flags, file_path.to_s].shelljoin
 
-    stdout, status = Open3.capture2(command)
-    raise CommandFailed.new(command) unless status.success?
-    force_utf8_encoding(stdout)
+    output, error, status = capture3(*command.shellsplit)
+    raise CommandFailed.new(command: command, error: error) unless status.success?
+    force_utf8_encoding(output)
+  end
+
+  # reimplementation of Open3.capture3 using posix-spawn
+  def capture3(*cmd, stdin_data: '')
+    child_process = Child.new(*cmd, input: stdin_data)
+    [child_process.out, child_process.err, child_process.status]
   end
 
   # prepares array of flags to pass as command line options
@@ -143,14 +157,14 @@ class Pdfinfo
   end
 
   def parse_shell_response(response_str)
-    kv_pairs = response_str.split(/\n+/).map {|line| line.split(/:/, 2).map(&:strip) }
-    Hash[kv_pairs.reject {|ary| ary.empty? }]
+    kv_pairs = response_str.split(/\n+/).map { |line| line.split(/:/, 2).map(&:strip) }
+    Hash[kv_pairs.reject { |ary| ary.empty? }]
   end
 
   def parse_time(str)
     return unless presence(str)
-    DateTime.strptime(str, '%a %b %e %H:%M:%S %Y')
-  rescue ArgumentError => e
+    Time.strptime(str, '%a %b %e %H:%M:%S %Y')
+  rescue ArgumentError
     nil
   end
 
